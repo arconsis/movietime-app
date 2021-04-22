@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "6937ec52-7c30-4bc7-ab29-b33134fce0b5",
+		"name": "Movies",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Movie data with id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/movie/{{movie_id}}?api_key={{api_key}}&language={{language}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"movie",
+						"{{movie_id}}"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "{{api_key}}"
+						},
+						{
+							"key": "language",
+							"value": "{{language}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Popular movies",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/discover/movie?sort_by=popularity.desc&api_key={{api_key}}&language={{language}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"discover",
+						"movie"
+					],
+					"query": [
+						{
+							"key": "sort_by",
+							"value": "popularity.desc"
+						},
+						{
+							"key": "api_key",
+							"value": "{{api_key}}"
+						},
+						{
+							"key": "language",
+							"value": "{{language}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Movie Image",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://image.tmdb.org/t/p/w500/{{movie_image_name}}?api_key={{api_key}}&language={{language}}",
+					"protocol": "https",
+					"host": [
+						"image",
+						"tmdb",
+						"org"
+					],
+					"path": [
+						"t",
+						"p",
+						"w500",
+						"{{movie_image_name}}"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "{{api_key}}"
+						},
+						{
+							"key": "language",
+							"value": "{{language}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search Movies",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.themoviedb.org/3/search/movie?api_key={{api_key}}&query=marvel",
+					"protocol": "https",
+					"host": [
+						"api",
+						"themoviedb",
+						"org"
+					],
+					"path": [
+						"3",
+						"search",
+						"movie"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "{{api_key}}"
+						},
+						{
+							"key": "query",
+							"value": "marvel"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
