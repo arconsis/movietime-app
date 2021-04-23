@@ -9,22 +9,19 @@
 import SwiftUI
 import ComposableArchitecture
 import Combine
+import MovieApi
 
 struct DemoScreen: View {
     
-    let store: Store<DemoState, DemoAction>
+    let store: Store<MovieListState, MovieListAction>
     
     var body: some View {
         
         WithViewStore(store) { viewStore in
-            VStack {
-                TextField("input",
-                          text: viewStore.binding(get: \.text,
-                                                  send: DemoAction.didSomething))
-                Text(viewStore.text)
-                Button("Button") {
-                    viewStore.send(.buttonTapped)
-                }
+            List(viewStore.movies) { movie in
+                Text(movie.title)
+            }.onAppear {
+                viewStore.send(.onStart)
             }
         }
     }
@@ -33,42 +30,45 @@ struct DemoScreen: View {
 struct DemoScreen_Previews: PreviewProvider {
     static var previews: some View {
         DemoScreen(
-            store: Store<DemoState, DemoAction>(
-                initialState: DemoState(),
-                reducer: demoReducer,
-                environment: DemoEnvironment(
+            store: Store<MovieListState, MovieListAction>(
+                initialState: MovieListState(),
+                reducer: movieListReducer,
+                environment: MovieListEnvironment(
                     mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-                    doSomething: {
-                        return CurrentValueSubject("Something").eraseToEffect()
+                    search: { _ -> Effect<[Movie], MovieApi.Error> in
+                        return CurrentValueSubject([Movie(title: "My Movie", id: 1)]).eraseToEffect()
                     }
+                    
                 ))
         )
     }
 }
 
-struct DemoState: Equatable {
-    var text: String = "Hello, World!"
+struct MovieListState: Equatable {
+    var movies: [Movie] = []
 }
 
-enum DemoAction: Equatable {
-    case buttonTapped
-    case didSomething(String)
+enum MovieListAction: Equatable {
+    case showMovies(Result<[Movie], MovieApi.Error>)
+    case onStart
 }
 
-struct DemoEnvironment {
+struct MovieListEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
-    var doSomething: () -> Effect<String, Never>
+    var search: (String) -> Effect<[Movie], MovieApi.Error>
 }
 
-let demoReducer = Reducer<DemoState, DemoAction, DemoEnvironment> { state, action, env in
+let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment> { state, action, env in
     switch action {
-    case .buttonTapped:
-        return env.doSomething()
+    case .onStart:
+        return env.search("Marvel")
             .receive(on: env.mainQueue)
-            .eraseToEffect()
-            .map(DemoAction.didSomething)
-    case .didSomething(let text):
-        state.text = text
+            .catchToEffect() // TODO: how to handle errors?
+            .map(MovieListAction.showMovies)
+    case let .showMovies(.success(movies)):
+        state.movies = movies
+        return .none
+    case .showMovies(.failure):
         return .none
     }
 
