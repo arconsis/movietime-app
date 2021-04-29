@@ -1,8 +1,9 @@
 import Foundation
 import XCTest
+import MovieApi
+import Combine
 
 final class MovieApiTests: XCTestCase {
-    func test_example() {
-        XCTAssertEqual("MovieApi", "MovieApi")
-    }
+    
+    
 }
