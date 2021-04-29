@@ -8,8 +8,24 @@
 
 import Foundation
 import SwiftUI
+import MovieApi
 
 struct Movie: Equatable, Identifiable {
-    let title: String
     let id: Int
+    let title: String
+    let overview: String?
+    let posterPath: String?
+}
+
+extension Movie {
+    init(movie: MovieApi.Movie) {
+        id = movie.id
+        title = movie.title ?? "NA"
+        overview = movie.overview
+        posterPath = movie.posterPath
+    }
+}
+
+extension Movie {
+    static let preview: [Movie] = [Movie(id: 0, title: "Movie", overview: "Some longer text about the movie and what it is about.", posterPath: "/test")]
 }

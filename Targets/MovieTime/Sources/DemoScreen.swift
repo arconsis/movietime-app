@@ -18,10 +18,20 @@ struct DemoScreen: View {
     var body: some View {
         
         WithViewStore(store) { viewStore in
-            List(viewStore.movies) { movie in
-                Text(movie.title)
-            }.onAppear {
-                viewStore.send(.onStart)
+            VStack(spacing: 0) {
+                HStack {
+                    Image(systemName:"magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Search Movie", text:viewStore.binding(
+                                get: \.searchTerm,
+                                send: MovieListAction.searchFieldChanged))
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                Divider()
+                List(viewStore.movies) { movie in
+                    MovieListRow(movie: movie)
+                }
             }
         }
     }
@@ -31,12 +41,15 @@ struct DemoScreen_Previews: PreviewProvider {
     static var previews: some View {
         DemoScreen(
             store: Store<MovieListState, MovieListAction>(
-                initialState: MovieListState(),
+                initialState: MovieListState(
+                    movies: Movie.preview
+                ),
                 reducer: movieListReducer,
                 environment: MovieListEnvironment(
                     mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-                    search: { _ -> Effect<[Movie], MovieApi.Error> in
-                        return CurrentValueSubject([Movie(title: "My Movie", id: 1)]).eraseToEffect()
+                    search: { _ -> AnyPublisher<[Movie], MovieApi.Error> in
+                        return CurrentValueSubject(Movie.preview)
+                            .eraseToAnyPublisher()
                     }
                     
                 ))
@@ -45,30 +58,46 @@ struct DemoScreen_Previews: PreviewProvider {
 }
 
 struct MovieListState: Equatable {
+    var searchTerm: String = ""
     var movies: [Movie] = []
 }
 
 enum MovieListAction: Equatable {
     case showMovies(Result<[Movie], MovieApi.Error>)
-    case onStart
+    case searchFieldChanged(String)
+    case search(String)
 }
 
 struct MovieListEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
-    var search: (String) -> Effect<[Movie], MovieApi.Error>
+    var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
 }
 
 let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment> { state, action, env in
     switch action {
-    case .onStart:
-        return env.search("Marvel")
+    case let .searchFieldChanged(term):
+        struct SearchDebounceId: Hashable {}
+        
+        state.searchTerm = term
+    
+        return Effect(value: .search(term))
+            .debounce(
+                id: SearchDebounceId(),
+                for: 0.5,
+                scheduler: env.mainQueue)
+    case let .search(term):
+        guard !term.isEmpty else {
+            return Effect(value: .showMovies(.success([])))
+        }
+        return env.search(term)
             .receive(on: env.mainQueue)
-            .catchToEffect() // TODO: how to handle errors?
+            .catchToEffect()
             .map(MovieListAction.showMovies)
     case let .showMovies(.success(movies)):
         state.movies = movies
         return .none
     case .showMovies(.failure):
+        state.movies = []
         return .none
     }
 
