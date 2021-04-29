@@ -55,7 +55,7 @@ enum MovieListAction: Equatable {
 
 struct MovieListEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
-    var search: (String) -> Effect<[Movie], MovieApi.Error>
+    var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
 }
 
 let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment> { state, action, env in
@@ -63,7 +63,7 @@ let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnviron
     case .onStart:
         return env.search("Marvel")
             .receive(on: env.mainQueue)
-            .catchToEffect() // TODO: how to handle errors?
+            .catchToEffect()
             .map(MovieListAction.showMovies)
     case let .showMovies(.success(movies)):
         state.movies = movies

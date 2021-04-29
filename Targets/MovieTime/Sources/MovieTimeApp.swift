@@ -23,26 +23,10 @@ struct MovieTime: App {
     @State private var cancellables: Set<AnyCancellable> = []
  
     
-    func search(query: String) -> Effect<[Movie], MovieApi.Error> {
+    func search(query: String) -> AnyPublisher<[Movie], MovieApi.Error> {
         MovieApi.search(query: query)
             .receive(on: DispatchQueue.main)
-            .map { $0.map { movie in Movie(title: movie.title ?? "", id: movie.id)} }
-            .eraseToEffect()
-
-            
-//            .sink { completion in
-//                switch completion {
-//                case .finished:
-//                    break
-//                case .failure(let error):
-//                    print("search error")
-//                }
-//            } receiveValue: { movies in
-//                print(movies)
-//            }
-//            .
-//            .store(in: &cancellables)
-            
-        
+            .map { $0.map(Movie.init) }
+            .eraseToAnyPublisher()
     }
 }
