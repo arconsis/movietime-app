@@ -17,3 +17,22 @@ public extension MovieApi {
         public let posterPath: String?
     }
 }
+
+public extension MovieApi.Movie {
+    
+    var thumbnailUrl: URL? {
+        if let path = posterPath {
+            return URL(string: "https://image.tmdb.org/t/p/w200\(path)")
+        } else {
+            return nil
+        }
+    }
+    
+    var posterUrl: URL? {
+        if let path = posterPath {
+            return URL(string: "https://image.tmdb.org/t/p/original\(path)")
+        } else {
+            return nil
+        }
+    }
+}
