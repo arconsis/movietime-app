@@ -14,7 +14,7 @@ struct Movie: Equatable, Identifiable {
     let id: Int
     let title: String
     let overview: String?
-    let posterPath: String?
+    let posterUrl: URL?
 }
 
 extension Movie {
@@ -22,10 +22,10 @@ extension Movie {
         id = movie.id
         title = movie.title ?? "NA"
         overview = movie.overview
-        posterPath = movie.posterPath
+        posterUrl = movie.thumbnailUrl
     }
 }
 
 extension Movie {
-    static let preview: [Movie] = [Movie(id: 0, title: "Movie", overview: "Some longer text about the movie and what it is about.", posterPath: "/test")]
+    static let preview: [Movie] = [Movie(id: 0, title: "Movie", overview: "Some longer text about the movie and what it is about.", posterUrl: nil)]
 }

@@ -1,5 +1,5 @@
 //
-//  DemoScreen.swift
+//  MovieListScreen.swift
 //  MovieTime
 //
 //  Created by arconsis on 15.04.21.
@@ -11,7 +11,7 @@ import ComposableArchitecture
 import Combine
 import MovieApi
 
-struct DemoScreen: View {
+struct MovieListScreen: View {
     
     let store: Store<MovieListState, MovieListAction>
     
@@ -37,9 +37,9 @@ struct DemoScreen: View {
     }
 }
 
-struct DemoScreen_Previews: PreviewProvider {
+struct MovieListScreen_Previews: PreviewProvider {
     static var previews: some View {
-        DemoScreen(
+        MovieListScreen(
             store: Store<MovieListState, MovieListAction>(
                 initialState: MovieListState(
                     movies: Movie.preview
