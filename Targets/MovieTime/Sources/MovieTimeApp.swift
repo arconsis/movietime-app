@@ -8,7 +8,7 @@ struct MovieTime: App {
     
     var body: some Scene {
         WindowGroup {
-            DemoScreen(
+            MovieListScreen(
                 store: Store<MovieListState, MovieListAction>(
                     initialState: MovieListState(),
                     reducer: movieListReducer,

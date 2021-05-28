@@ -13,18 +13,23 @@ struct MovieListRow: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            RoundedRectangle(cornerRadius: 10)
-                .frame(width: 40, height: 40)
+            if let url = movie.posterUrl {
+                RemoteImage(url: url)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 100)
+                
+                    
+            }
             VStack(alignment: .leading) {
                 Text(movie.title)
                     .font(.headline)
-                 
+                
                 if let desc = movie.overview {
                     Text(desc)
-                        .lineLimit(2)
+                        .lineLimit(5)
                         .font(.caption)
                 }
-
+                
             }
             Spacer()
         }.padding()
