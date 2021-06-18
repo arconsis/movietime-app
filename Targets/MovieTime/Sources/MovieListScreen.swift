@@ -29,8 +29,12 @@ struct MovieListScreen: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
                 Divider()
-                List(viewStore.movies) { movie in
-                    MovieListRow(movie: movie)
+                ScrollView {
+                    LazyVStack {
+                        ForEach(viewStore.movies) { movie in
+                            MovieListRow(movie: movie)
+                        }
+                    }
                 }
             }
         }
@@ -101,4 +105,4 @@ let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnviron
         return .none
     }
 
-}.debug()
+}
