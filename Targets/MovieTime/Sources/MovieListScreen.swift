@@ -23,18 +23,25 @@ struct MovieListScreen: View {
                     Image(systemName:"magnifyingglass")
                         .foregroundColor(.gray)
                     TextField("Search Movie", text:viewStore.binding(
-                                get: \.searchTerm,
-                                send: MovieListAction.searchFieldChanged))
+                        get: \.searchTerm,
+                        send: MovieListAction.searchFieldChanged))
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
                 Divider()
-                ScrollView {
-                    LazyVStack {
-                        ForEach(viewStore.movies) { movie in
-                            MovieListRow(movie: movie)
-                        }
+                List {
+                    ForEach(viewStore.movies) { movie in
+                        MovieListRow(movie: movie)
+                        
+                            .swipeActions {
+                                
+                                Button("Fav") {
+                                    
+                                }
+                            }
                     }
+                }.onAppear {
+                    viewStore.send(.search("Marvel"))
                 }
             }
         }

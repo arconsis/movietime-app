@@ -14,9 +14,15 @@ struct MovieListRow: View {
     var body: some View {
         HStack(alignment: .top) {
             if let url = movie.posterUrl {
-                RemoteImage(url: url)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .frame(width: 100)
+                AsyncImage(url: url, content: { image in
+                    image.resizable()
+                        .aspectRatio(contentMode: .fit)
+                }, placeholder: {
+                    Color.green
+                        .aspectRatio(3/4, contentMode: .fit)
+                })
+                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                 .frame(width: 100)
                 
                     
             }
