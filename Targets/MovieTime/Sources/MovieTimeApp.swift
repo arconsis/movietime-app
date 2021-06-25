@@ -8,15 +8,23 @@ struct MovieTime: App {
     
     var body: some Scene {
         WindowGroup {
-            MovieListScreen(
-                store: Store<MovieListState, MovieListAction>(
-                    initialState: MovieListState(),
-                    reducer: movieListReducer,
-                    environment: MovieListEnvironment(
-                        mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-                        search: search(query:)
-                    ))
-            )
+            TabView {
+                MovieListScreen(
+                    store: Store<MovieListState, MovieListAction>(
+                        initialState: MovieListState(),
+                        reducer: movieListReducer,
+                        environment: MovieListEnvironment(
+                            mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+                            search: search(query:)
+                        ))
+                ).tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+                Text("test")
+                    .tabItem {
+                        Label("Favorites", systemImage: "heart")
+                    }
+            }
         }
     }
     

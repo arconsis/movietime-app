@@ -15,6 +15,7 @@ struct Movie: Equatable, Identifiable {
     let title: String
     let overview: String?
     let posterUrl: URL?
+    var isFavorite: Bool = false
 }
 
 extension Movie {

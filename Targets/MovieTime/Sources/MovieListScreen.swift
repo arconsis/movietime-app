@@ -30,16 +30,8 @@ struct MovieListScreen: View {
                 .padding(.vertical, 8)
                 Divider()
                 List {
-                    ForEach(viewStore.movies) { movie in
-                        MovieListRow(movie: movie)
-                        
-                            .swipeActions {
-                                
-                                Button("Fav") {
-                                    
-                                }
-                            }
-                    }
+                    ForEachStore(store.scope(state: \.movies, action: MovieListAction.movie(id:action:)),
+                                 content: MovieListRow.init(store:))
                 }.onAppear {
                     viewStore.send(.search("Marvel"))
                 }
@@ -77,6 +69,7 @@ enum MovieListAction: Equatable {
     case showMovies(Result<[Movie], MovieApi.Error>)
     case searchFieldChanged(String)
     case search(String)
+    case movie(id: Int, action: MovieAction)
 }
 
 struct MovieListEnvironment {
@@ -84,7 +77,12 @@ struct MovieListEnvironment {
     var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
 }
 
-let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment> { state, action, env in
+let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment>.combine(
+    movieReducer.forEach(
+        state: \.movies,
+        action: /MovieListAction.movie(id:action:),
+        environment: { _ in MovieEnvironment()}),
+Reducer { state, action, env in
     switch action {
     case let .searchFieldChanged(term):
         struct SearchDebounceId: Hashable {}
@@ -110,6 +108,8 @@ let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnviron
     case .showMovies(.failure):
         state.movies = []
         return .none
+    case let .movie(id: movieId, action: .toggleFavorite):
+        return .none
     }
 
-}
+})
