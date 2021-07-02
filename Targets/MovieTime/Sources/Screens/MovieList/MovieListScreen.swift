@@ -33,7 +33,9 @@ struct MovieListScreen: View {
                     ForEachStore(store.scope(state: \.movies, action: MovieListAction.movie(id:action:)),
                                  content: MovieListRow.init(store:))
                 }.onAppear {
-                    viewStore.send(.search("Marvel"))
+                    if viewStore.searchTerm.isEmpty {
+                        viewStore.send(.searchFieldChanged("Marvel"))
+                    }
                 }
             }
         }
@@ -60,56 +62,3 @@ struct MovieListScreen_Previews: PreviewProvider {
     }
 }
 
-struct MovieListState: Equatable {
-    var searchTerm: String = ""
-    var movies: [Movie] = []
-}
-
-enum MovieListAction: Equatable {
-    case showMovies(Result<[Movie], MovieApi.Error>)
-    case searchFieldChanged(String)
-    case search(String)
-    case movie(id: Int, action: MovieAction)
-}
-
-struct MovieListEnvironment {
-    var mainQueue: AnySchedulerOf<DispatchQueue>
-    var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
-}
-
-let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment>.combine(
-    movieReducer.forEach(
-        state: \.movies,
-        action: /MovieListAction.movie(id:action:),
-        environment: { _ in MovieEnvironment()}),
-Reducer { state, action, env in
-    switch action {
-    case let .searchFieldChanged(term):
-        struct SearchDebounceId: Hashable {}
-        
-        state.searchTerm = term
-    
-        return Effect(value: .search(term))
-            .debounce(
-                id: SearchDebounceId(),
-                for: 0.5,
-                scheduler: env.mainQueue)
-    case let .search(term):
-        guard !term.isEmpty else {
-            return Effect(value: .showMovies(.success([])))
-        }
-        return env.search(term)
-            .receive(on: env.mainQueue)
-            .catchToEffect()
-            .map(MovieListAction.showMovies)
-    case let .showMovies(.success(movies)):
-        state.movies = movies
-        return .none
-    case .showMovies(.failure):
-        state.movies = []
-        return .none
-    case let .movie(id: movieId, action: .toggleFavorite):
-        return .none
-    }
-
-})
