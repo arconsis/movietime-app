@@ -48,7 +48,26 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         action: /AppAction.favorites,
         environment: FavoritesEnvironment.init),
     
-    .init { _, _ ,_ in
-        return .none
+    .init { state, action ,_ in
+        switch action {
+        case AppAction.movieList(action: MovieListAction.movie(index: let index, action: MovieAction.toggleFavorite)):
+            let movie = state.movieList.movies[index]
+            return Effect(value: .favorites(action: .toggleFavorite(movie)))
+        case AppAction.favorites(action: FavoritesAction.toggleFavorite(let movie)):
+            if let index = state.movieList.movies.firstIndex(where: { $0.id == movie.id }) {
+                state.movieList.movies[index].isFavorite = movie.isFavorite
+            }
+            return .none
+        case AppAction.movieList(action: MovieListAction.showMovies):
+            state.favorites.movies.forEach { favorite in
+                if let index = state.movieList.movies.firstIndex(where: { $0.id == favorite.id }) {
+                    state.movieList.movies[index].isFavorite = true
+                }
+            }
+            
+            return .none
+        default:
+            return .none
+        }
     }
 )
