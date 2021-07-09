@@ -16,13 +16,7 @@ struct MovieListRow: View {
         WithViewStore(store) { viewStore in
             HStack(alignment: .top) {
                 if let url =  viewStore.posterUrl {
-                    AsyncImage(url: url, content: { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fit)
-                    }, placeholder: {
-                        Color.green
-                            .aspectRatio(3/4, contentMode: .fit)
-                    })
+                    RemoteImage(url: url)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .frame(width: 100)
                 }
