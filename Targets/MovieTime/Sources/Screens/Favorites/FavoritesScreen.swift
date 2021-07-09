@@ -15,7 +15,15 @@ struct FavoritesScreen: View {
     
     var body: some View {
         WithViewStore(store) { viewStore in
-            Text("Favorites")            
+            if viewStore.movies.isEmpty {
+                Label("No **favorites** set", systemImage: "heart.fill")
+            } else {
+                List {
+                    ForEachStore(store.scope(state: \.movies,
+                                             action: FavoritesAction.movie(index:action:)),
+                                 content: MovieListRow.init(store:))
+                }
+            }
         }
     }
 }
