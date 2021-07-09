@@ -22,7 +22,7 @@ enum MovieListAction: Equatable {
     case showMovies(Result<[Movie], MovieApi.Error>)
     case searchFieldChanged(String)
     case search(String)
-    case movie(id: Int, action: MovieAction)
+    case movie(index: Int, action: MovieAction)
 }
 
 // MARK: - Environment
@@ -35,7 +35,7 @@ struct MovieListEnvironment {
 let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment>.combine(
     movieReducer.forEach(
         state: \.movies,
-        action: /MovieListAction.movie(id:action:),
+        action: /MovieListAction.movie(index:action:),
         environment: { _ in MovieEnvironment()}),
 Reducer { state, action, env in
     switch action {
@@ -63,7 +63,7 @@ Reducer { state, action, env in
     case .showMovies(.failure):
         state.movies = []
         return .none
-    case let .movie(id: movieId, action: .toggleFavorite):
+    case let .movie(index: movieId, action: .toggleFavorite):
         return .none
     }
 

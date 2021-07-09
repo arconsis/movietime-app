@@ -30,7 +30,7 @@ struct MovieListScreen: View {
                 .padding(.vertical, 8)
                 Divider()
                 List {
-                    ForEachStore(store.scope(state: \.movies, action: MovieListAction.movie(id:action:)),
+                    ForEachStore(store.scope(state: \.movies, action: MovieListAction.movie(index:action:)),
                                  content: MovieListRow.init(store:))
                 }.onAppear {
                     if viewStore.searchTerm.isEmpty {
