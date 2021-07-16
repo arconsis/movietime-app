@@ -15,23 +15,20 @@ struct AppScreen: View {
     
     var body: some View {
         TabView {
-            MovieListScreen(store: store.scope(state: \.movieList, action: AppAction.movieList))
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
-            FavoritesScreen(store: store.scope(state: \.favorites, action: AppAction.favorites))
-                .tabItem {
-                    Label("Favorites", systemImage: "heart")
-                }
+            NavigationView {
+                MovieListScreen(store: store.scope(state: \.movieList, action: AppAction.movieList))
+            }
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
+            NavigationView {
+                FavoritesScreen(store: store.scope(state: \.favorites, action: AppAction.favorites))
+            }
+            .tabItem {
+                Label("Favorites", systemImage: "heart")
+            }
         }
     }
 }
 
-//struct AppView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        AppScreen(store: Store(
-//            initialState: AppState(),
-//            reducer: appReducer,
-//            environment: .init(mainQueue: .main, search: { _ in return []})))
-//    }
-//}
+

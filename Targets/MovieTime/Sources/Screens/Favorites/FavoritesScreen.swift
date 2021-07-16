@@ -23,7 +23,9 @@ struct FavoritesScreen: View {
                                              action: FavoritesAction.movie(index:action:)),
                                  content: MovieListRow.init(store:))
                 }
+                .listStyle(.plain)
             }
         }
+        .navigationTitle("Favorites")
     }
 }

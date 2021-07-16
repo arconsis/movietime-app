@@ -1,18 +1,20 @@
 import Foundation
 import Combine
+import SwiftUI
 
 public struct MovieApi {}
 
 public extension MovieApi {
     enum Error: Swift.Error {
         case search
+        case detail
     }
 }
 
 public extension MovieApi {
     
     static func search(query: String) async throws -> [Movie] {
-        let url = createURL(forQuery: query)
+        let url = Endpoints.search(query).url
         
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -34,7 +36,7 @@ public extension MovieApi {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         
-        let url = createURL(forQuery: query)
+        let url = Endpoints.search(query).url
         
         let session = URLSession(configuration: .default)
         return session.dataTaskPublisher(for: url)
@@ -43,18 +45,57 @@ public extension MovieApi {
             .map(\.results)
             .mapError { error in
                 print(error)
-                return MovieApi.Error.search
+                return MovieApi.Error.detail
             }
             .eraseToAnyPublisher()
     }
     
-    private static func createURL(forQuery query: String) -> URL {
-        var components = URLComponents(string: "https://api.themoviedb.org/4/search/movie")!
-        components.queryItems = [
-            URLQueryItem(name: "api_key", value: apiKey),
-            URLQueryItem(name: "query", value: query)
-        ]
-        return components.url!
+    static func detail(movieId: Int) -> AnyPublisher<Movie, MovieApi.Error> {
+        
+    
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+//        decoder.dateDecodingStrategy = .iso8601
+        
+        let url = Endpoints.detail(movieId).url
+        print(url)
+        let session = URLSession(configuration: .default)
+        return session.dataTaskPublisher(for: url)
+            .map {
+                print(String(data: $0.data, encoding: .utf8)!)
+                return $0.data
+            }
+            .decode(type: Movie.self, decoder: decoder)
+            .mapError { error in
+                print(error)
+                return MovieApi.Error.search
+            }
+            .eraseToAnyPublisher()
+    }
+
+    enum Endpoints {
+        case search(String)
+        case detail(Int)
+        
+        private var baseComponents: URLComponents {
+            var components = URLComponents(string: "https://api.themoviedb.org/3/")!
+            components.queryItems = [
+                URLQueryItem(name: "api_key", value: apiKey),
+            ]
+            return components
+        }
+
+        var url: URL {
+            var components = baseComponents
+            switch self {
+            case .search(let query):
+                components.queryItems?.append(URLQueryItem(name: "query", value: query))
+                components.path.append("search/movie")
+            case .detail(let movieId):
+                components.path.append("movie/\(movieId)")
+            }
+            return components.url!
+        }
     }
 }
 

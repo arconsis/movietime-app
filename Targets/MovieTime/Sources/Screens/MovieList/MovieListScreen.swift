@@ -32,13 +32,16 @@ struct MovieListScreen: View {
                 List {
                     ForEachStore(store.scope(state: \.movies, action: MovieListAction.movie(index:action:)),
                                  content: MovieListRow.init(store:))
-                }.onAppear {
+                }
+                .listStyle(.plain)
+                .onAppear {
                     if viewStore.searchTerm.isEmpty {
                         viewStore.send(.searchFieldChanged("Marvel"))
                     }
                 }
             }
         }
+        .navigationTitle("Movie Time")
     }
 }
 

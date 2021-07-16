@@ -15,6 +15,8 @@ public extension MovieApi {
         public let overview: String?
         public let originalTitle: String?
         public let posterPath: String?
+        public let runtime: Int?
+        public let releaseDate: String?
     }
 }
 

@@ -14,33 +14,42 @@ struct MovieListRow: View {
     
     var body: some View {
         WithViewStore(store) { viewStore in
-            HStack(alignment: .top) {
-                if let url =  viewStore.posterUrl {
-                    RemoteImage(url: url)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .frame(width: 100)
-                }
-                VStack(alignment: .leading) {
-                    Text(viewStore.title)
-                        .font(.headline)
+            NavigationLink(destination: MovieDetailScreen.detail(for: viewStore.state)) {
+                HStack(alignment: .top) {
+                    if let url =  viewStore.posterThumbnail {
+                        RemoteImage(url: url)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .frame(width: 100)
+                    }
+                    VStack(alignment: .leading) {
+                        Text(viewStore.title)
+                            .font(.headline)
+                        
+                        if let desc = viewStore.overview {
+                            Text(desc)
+                                .lineLimit(5)
+                                .font(.caption)
+                        }
+                        Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .onTapGesture {
+                                viewStore.send(.toggleFavorite)
+                            }
+                        
+                    }
+                    Spacer()
+                }.padding()
                     
-                    if let desc = viewStore.overview {
-                        Text(desc)
-                            .lineLimit(5)
-                            .font(.caption)
-                    }
-                    Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
+            }
+            .swipeActions {
+                Button {
+                    viewStore.send(.toggleFavorite)
+                } label: {
+                    Image(systemName: viewStore.isFavorite ? "heart.slash.fill" : "heart.fill")
                 }
-                Spacer()
-            }.padding()
-                .swipeActions {
-                    Button {
-                        viewStore.send(.toggleFavorite)
-                    } label: {
-                        Image(systemName: viewStore.isFavorite ? "heart.slash.fill" : "heart.fill")
-                    }
-
-                }
+                
+            }
         }
     }
 }
