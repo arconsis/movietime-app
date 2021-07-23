@@ -25,7 +25,6 @@ struct RemoteImage: View {
             if let uiImage = loader.image {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
             } else {
                 Rectangle()
             }

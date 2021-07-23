@@ -18,29 +18,73 @@ struct MovieDetailScreen: View {
     var body: some View {
         
         WithViewStore(store) { viewStore in
-            ScrollView {
-                VStack(alignment: .leading) {
-                    if let overview = viewStore.movie.overview {
-                        Text(overview).padding()
+            ZStack {
+                VStack {
+                    GeometryReader { reader in
+                        if let url = viewStore.movie.backdropUrl {
+                            RemoteImage(url: url)
+                                .aspectRatio(contentMode: .fill)
+                                .mask(
+                                    LinearGradient(
+                                        colors: [
+                                            .white,
+                                            .white,
+                                            .white,
+                                            .white.opacity(0)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom)
+                                )
+                                
+                                .frame(width: reader.size.width, height: 400, alignment: .center)
+                        }
                     }
-                    if viewStore.state.isLoading {
-                        Text("updating")
+                    Spacer()
+                }
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text(viewStore.movie.title)
+                                .font(.title)
+                                .padding(.top, 300)
+                            
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            ForEach(viewStore.movie.genres, id: \.self) { genre in
+                                Text(genre)
+                                    .font(.caption)
+                                    .padding(.vertical, 4)
+                                    .padding(.horizontal, 8)
+                                    .background(.ultraThinMaterial)
+                                    .cornerRadius(10)
+                                
+                            }
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text(viewStore.movie.overview ?? "")
+                                .font(.body)
+                                .padding(.top, 20)
+                            
+                            Spacer()
+                        }
+                        
+                        Spacer()
                     }
-                    if let date = viewStore.state.movie.releaseDate {
-                        Text(date, style: .date)
-                    }
-                    if let url = viewStore.movie.posterUrl {
-                        RemoteImage(url: url)
-                            .frame(maxWidth: .infinity)
-                    }
-                    Text(viewStore.movie.title)
+                    .padding()
+                    .foregroundColor(.white)
                 }
             }
+            .background(.black)
             .onAppear {
                 viewStore.send(.viewAppeared)
             }
-            .navigationTitle(viewStore.movie.title)
-        }
+        }.ignoresSafeArea(edges: .top)
+
+        
     }
 }
 

@@ -18,6 +18,7 @@ struct MovieListRow: View {
                 HStack(alignment: .top) {
                     if let url =  viewStore.posterThumbnail {
                         RemoteImage(url: url)
+                            .aspectRatio(contentMode: .fit)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .frame(width: 100)
                     }
