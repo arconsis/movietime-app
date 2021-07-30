@@ -8,9 +8,11 @@
 
 import Foundation
 import ComposableArchitecture
+import Combine
+import MovieApi
 
 struct FavoritesState: Equatable {
-    var movies: [Movie] = []
+    var movieStates: [MovieState] = []
 }
 
 enum FavoritesAction {
@@ -19,26 +21,27 @@ enum FavoritesAction {
 }
 
 struct FavoritesEnvironment {
-    
+    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>    
 }
 
 let favoritesReducer = Reducer<FavoritesState, FavoritesAction, FavoritesEnvironment>.combine(
     movieReducer.forEach(
-        state: \.movies,
+        state: \.movieStates,
         action: /FavoritesAction.movie(index:action:),
-        environment: { _ in MovieEnvironment()}),
+        environment: { MovieEnvironment(load: $0.load) }),
     
     Reducer { state, action, env in
         switch action {
         case .movie(index: let index, action: MovieAction.toggleFavorite):
-            return Effect(value: .toggleFavorite(state.movies[index]))
+            return Effect(value: .toggleFavorite(state.movieStates[index].movie))
         case .toggleFavorite(let movie):
-            if let index = state.movies.firstIndex(where: { $0.id == movie.id }) {
-                state.movies.remove(at: index)
+            if let index = state.movieStates.firstIndex(where: { $0.id == movie.id }) {
+                state.movieStates.remove(at: index)
             } else {
-                state.movies.append(movie)
+                state.movieStates.append(MovieState(movie: movie))
             }
             return .none
+        default: return .none
         }
 }
 )

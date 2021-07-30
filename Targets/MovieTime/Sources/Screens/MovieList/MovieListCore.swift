@@ -14,7 +14,7 @@ import Combine
 // MARK: - State
 struct MovieListState: Equatable {
     var searchTerm: String = ""
-    var movies: [Movie] = []
+    var movieStates: [MovieState] = []
 }
 
 // MARK: - Actions
@@ -29,14 +29,15 @@ enum MovieListAction: Equatable {
 struct MovieListEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
     var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
+    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>
 }
 
 // MARK: - Reducer
 let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment>.combine(
     movieReducer.forEach(
-        state: \.movies,
+        state: \.movieStates,
         action: /MovieListAction.movie(index:action:),
-        environment: { _ in MovieEnvironment()}),
+        environment: { MovieEnvironment(load: $0.load) }),
 Reducer { state, action, env in
     switch action {
     case let .searchFieldChanged(term):
@@ -58,13 +59,12 @@ Reducer { state, action, env in
             .catchToEffect()
             .map(MovieListAction.showMovies)
     case let .showMovies(.success(movies)):
-        state.movies = movies
+        state.movieStates = movies.map { MovieState(movie: $0) }
         return .none
     case .showMovies(.failure):
-        state.movies = []
+        state.movieStates = []
         return .none
-    case let .movie(index: movieId, action: .toggleFavorite):
-        return .none
+    default: return .none
     }
 
 })

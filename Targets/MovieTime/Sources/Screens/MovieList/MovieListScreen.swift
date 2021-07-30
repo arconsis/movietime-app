@@ -30,7 +30,7 @@ struct MovieListScreen: View {
                 .padding(.vertical, 8)
                 Divider()
                 List {
-                    ForEachStore(store.scope(state: \.movies, action: MovieListAction.movie(index:action:)),
+                    ForEachStore(store.scope(state: \.movieStates, action: MovieListAction.movie(index:action:)),
                                  content: MovieListRow.init(store:))
                 }
                 .listStyle(.plain)
@@ -45,23 +45,23 @@ struct MovieListScreen: View {
     }
 }
 
-struct MovieListScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        MovieListScreen(
-            store: Store<MovieListState, MovieListAction>(
-                initialState: MovieListState(
-                    movies: Movie.preview
-                ),
-                reducer: movieListReducer,
-                environment: MovieListEnvironment(
-                    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-                    search: { _ -> AnyPublisher<[Movie], MovieApi.Error> in
-                        return CurrentValueSubject(Movie.preview)
-                            .eraseToAnyPublisher()
-                    }
-                    
-                ))
-        )
-    }
-}
+//struct MovieListScreen_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MovieListScreen(
+//            store: Store<MovieListState, MovieListAction>(
+//                initialState: MovieListState(
+//                    movies: Movie.preview
+//                ),
+//                reducer: movieListReducer,
+//                environment: MovieListEnvironment(
+//                    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+//                    search: { _ -> AnyPublisher<[Movie], MovieApi.Error> in
+//                        return CurrentValueSubject(Movie.preview)
+//                            .eraseToAnyPublisher()
+//                    }
+//                    
+//                ))
+//        )
+//    }
+//}
 

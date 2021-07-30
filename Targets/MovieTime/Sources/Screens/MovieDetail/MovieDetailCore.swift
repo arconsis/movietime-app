@@ -22,6 +22,7 @@ struct MovieDetailState: Equatable {
 enum MovieDetailAction: Equatable {
     case viewAppeared
     case updateMovie(Result<Movie, MovieApi.Error>)
+    case toggleFavorite
 }
 
 // MARK: - Environment
@@ -40,11 +41,16 @@ let movieDetailReducer = Reducer<MovieDetailState, MovieDetailAction, MovieDetai
             .map(MovieDetailAction.updateMovie)
     case .updateMovie(.success(let movie)):
         state.isLoading = false
+        let isFavorite = state.movie.isFavorite
         state.movie = movie
+        state.movie.isFavorite = isFavorite
         return .none
     case .updateMovie(.failure):
         state.isLoading = false
             // show update error?
+        return .none
+    case .toggleFavorite:
+        state.movie.isFavorite.toggle()
         return .none
     }
 }

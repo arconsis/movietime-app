@@ -24,17 +24,21 @@ enum AppAction {
 struct AppEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
     var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
+    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>
 }
 
 private extension MovieListEnvironment {
     init(env: AppEnvironment) {
         mainQueue = env.mainQueue
         search = env.search
+        load = env.load
     }
 }
 
 private extension FavoritesEnvironment {
-    init(env: AppEnvironment) {}
+    init(env: AppEnvironment) {
+        load = env.load
+    }
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
@@ -51,17 +55,17 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     .init { state, action ,_ in
         switch action {
         case AppAction.movieList(action: MovieListAction.movie(index: let index, action: MovieAction.toggleFavorite)):
-            let movie = state.movieList.movies[index]
+            let movie = state.movieList.movieStates[index].movie
             return Effect(value: .favorites(action: .toggleFavorite(movie)))
         case AppAction.favorites(action: FavoritesAction.toggleFavorite(let movie)):
-            if let index = state.movieList.movies.firstIndex(where: { $0.id == movie.id }) {
-                state.movieList.movies[index].isFavorite = movie.isFavorite
+            if let index = state.movieList.movieStates.firstIndex(where: { $0.id == movie.id }) {
+                state.movieList.movieStates[index].movie.isFavorite = movie.isFavorite
             }
             return .none
         case AppAction.movieList(action: MovieListAction.showMovies):
-            state.favorites.movies.forEach { favorite in
-                if let index = state.movieList.movies.firstIndex(where: { $0.id == favorite.id }) {
-                    state.movieList.movies[index].isFavorite = true
+            state.favorites.movieStates.forEach { favorite in
+                if let index = state.movieList.movieStates.firstIndex(where: { $0.id == favorite.id }) {
+                    state.movieList.movieStates[index].movie.isFavorite = true
                 }
             }
             

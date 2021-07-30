@@ -42,14 +42,40 @@ struct MovieDetailScreen: View {
                     Spacer()
                 }
                 ScrollView {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text(viewStore.movie.title)
-                                .font(.title)
-                                .padding(.top, 300)
-                            
-                            Spacer()
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(viewStore.movie.title)
+                            .font(.title)
+                            .padding(.top, 300)
+
+                        if !viewStore.movie.tagline.isEmpty {
+                            Text(viewStore.movie.tagline)
+                                .font(Font.subheadline)
                         }
+                        
+                        HStack(spacing: 16) {
+                            Label {
+                                Text("\(viewStore.movie.runtime) min")
+                            } icon: {
+                                Image(systemName: "clock").foregroundColor(.yellow)
+                            }
+                            
+                            if let date = viewStore.movie.releaseDate {
+                                Label {
+                                    Text(date, style: .date)
+                                } icon: {
+                                    Image(systemName: "calendar").foregroundColor(.yellow)
+                                }
+                            }
+                            
+                            Label {
+                                Text("\(viewStore.movie.voteAverage, format: .number)")
+                            } icon: {
+                                Image(systemName: "star").foregroundColor(.yellow)
+                            }
+
+                        }
+                        .font(Font.caption)
+                        .padding(.vertical, 8)
                         
                         HStack {
                             ForEach(viewStore.movie.genres, id: \.self) { genre in
@@ -65,12 +91,24 @@ struct MovieDetailScreen: View {
                         }
                         
                         HStack {
-                            Text(viewStore.movie.overview ?? "")
-                                .font(.body)
-                                .padding(.top, 20)
-                            
-                            Spacer()
+                            Label {
+                                Text(viewStore.movie.isFavorite ? "Remove from favorites" : "Add to favorites")
+                                    .font(.caption)
+                                    .bold()
+                                    .underline()
+                            } icon: {
+                                Image(systemName: viewStore.movie.isFavorite ? "heart.fill" : "heart")
+                            }
                         }
+                        .foregroundColor(.yellow)
+                        .padding(.top, 20)
+                        .onTapGesture {
+                            viewStore.send(.toggleFavorite)
+                        }
+                        
+                        Text(viewStore.movie.overview ?? "")
+                            .font(.body)
+                            .padding(.top, 20)
                         
                         Spacer()
                     }
