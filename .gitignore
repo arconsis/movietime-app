@@ -68,3 +68,4 @@ Derived/
 
 ### Tuist managed dependencies ###
 Tuist/Dependencies
+/Targets/MovieApi/Sources/Model/ApiKey.swift
