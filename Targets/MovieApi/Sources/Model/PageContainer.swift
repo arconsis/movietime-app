@@ -8,11 +8,9 @@
 
 import Foundation
 
-extension MovieApi {
-    struct PageContainer: Decodable {
-        let page: Int
-        let results: [Movie]
-        let totalPages: Int
-        let totalResults: Int
-    }
+struct PageContainerDto: Decodable {
+    let page: Int
+    let results: [MovieDto]
+    let totalPages: Int
+    let totalResults: Int
 }

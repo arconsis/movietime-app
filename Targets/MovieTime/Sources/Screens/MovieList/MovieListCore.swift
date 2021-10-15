@@ -19,7 +19,7 @@ struct MovieListState: Equatable {
 
 // MARK: - Actions
 enum MovieListAction: Equatable {
-    case showMovies(Result<[Movie], MovieApi.Error>)
+    case showMovies(Result<[Movie], MovieSearchError>)
     case searchFieldChanged(String)
     case search(String)
     case movie(index: Int, action: MovieAction)
@@ -28,8 +28,8 @@ enum MovieListAction: Equatable {
 // MARK: - Environment
 struct MovieListEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
-    var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
-    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>
+    var search: (String) -> AnyPublisher<[Movie], MovieSearchError>
+    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
 }
 
 // MARK: - Reducer

@@ -21,13 +21,13 @@ struct MovieDetailState: Equatable {
 // MARK: - Actions
 enum MovieDetailAction: Equatable {
     case viewAppeared
-    case updateMovie(Result<Movie, MovieApi.Error>)
+    case updateMovie(Result<Movie, MovieApiError>)
     case toggleFavorite
 }
 
 // MARK: - Environment
 struct MovieDetailEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>
+    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
 }
 
 // MARK: - Reducer

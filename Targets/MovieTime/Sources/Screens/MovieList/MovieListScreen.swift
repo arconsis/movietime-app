@@ -55,7 +55,7 @@ struct MovieListScreen: View {
 //                reducer: movieListReducer,
 //                environment: MovieListEnvironment(
 //                    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-//                    search: { _ -> AnyPublisher<[Movie], MovieApi.Error> in
+//                    search: { _ -> AnyPublisher<[Movie], MovieApiError> in
 //                        return CurrentValueSubject(Movie.preview)
 //                            .eraseToAnyPublisher()
 //                    }

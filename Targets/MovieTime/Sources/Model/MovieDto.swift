@@ -35,7 +35,7 @@ struct Movie: Equatable, Identifiable {
 }
 
 extension Movie {
-    init(movie: MovieApi.Movie) {
+    init(movie: MovieApi.MovieDto) {
         id = movie.id
         title = movie.title ?? "NA"
         overview = movie.overview

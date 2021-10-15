@@ -22,7 +22,7 @@ enum FavoritesAction {
 }
 
 struct FavoritesEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>    
+    var load: (Int) -> AnyPublisher<Movie, MovieApiError>    
 }
 
 let favoritesReducer = Reducer<FavoritesState, FavoritesAction, FavoritesEnvironment>.combine(

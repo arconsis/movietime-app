@@ -28,7 +28,7 @@ enum MovieAction: Equatable {
 }
 
 struct MovieEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>
+    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
 }
 
 let movieReducer = Reducer<MovieState, MovieAction, MovieEnvironment>.combine(

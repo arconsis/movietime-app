@@ -17,17 +17,14 @@ struct MovieTime: App {
     }
 }
 
+let movieService: MovieService = AppMovieService(api: TheMovieDBApi())
+
 extension AppEnvironment {
     static let app: AppEnvironment = AppEnvironment(
         mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-        search: { query in
-            MovieApi.search(query: query)
-                .receive(on: DispatchQueue.main)
-                .map { $0.map(Movie.init) }
-                .eraseToAnyPublisher()
-        },
+        search: movieService.search,
         load: { movieId in
-            MovieApi.detail(movieId:movieId)
+            TheMovieDBApi().detail(movieId:movieId)
                 .receive(on: DispatchQueue.main)
                 .map { Movie(movie: $0) }
                 .eraseToAnyPublisher()

@@ -141,7 +141,7 @@ extension MovieDetailScreen {
     static func detail(for movie: Movie) -> MovieDetailScreen {
         let environment = MovieDetailEnvironment(
             load: { movieId in
-            MovieApi.detail(movieId:movieId)
+            TheMovieDBApi().detail(movieId:movieId)
                 .receive(on: DispatchQueue.main)
                 .map { Movie(movie: $0) }
                 .eraseToAnyPublisher()

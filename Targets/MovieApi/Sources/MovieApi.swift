@@ -2,37 +2,27 @@ import Foundation
 import Combine
 import SwiftUI
 
-public struct MovieApi {}
-
-public extension MovieApi {
-    enum Error: Swift.Error {
-        case search
-        case detail
-    }
+public protocol MovieApiService {
+    func search(query: String) -> AnyPublisher<[MovieDto], MovieApiError>
+    func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError>
 }
 
-public extension MovieApi {
+
+
+
+public enum MovieApiError: Swift.Error {
+    case search
+    case detail
+}
+
+
+public struct TheMovieDBApi: MovieApiService {
     
-    static func search(query: String) async throws -> [Movie] {
-        let url = Endpoints.search(query).url
-        
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
-        let session = URLSession(configuration: .default)
-        
-        do {
-            let (data, _) = try await session.data(from: url)
-            return try decoder.decode(PageContainer.self, from: data).results
-                
-        } catch {
-            throw MovieApi.Error.search
-        }
-    }
+    public init(){}
     
-    static func search(query: String) -> AnyPublisher<[Movie], MovieApi.Error> {
+    public func search(query: String) -> AnyPublisher<[MovieDto], MovieApiError> {
         
-    
+        
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         
@@ -41,21 +31,20 @@ public extension MovieApi {
         let session = URLSession(configuration: .default)
         return session.dataTaskPublisher(for: url)
             .map { $0.data }
-            .decode(type: PageContainer.self, decoder: decoder)
+            .decode(type: PageContainerDto.self, decoder: decoder)
             .map(\.results)
             .mapError { error in
                 print(error)
-                return MovieApi.Error.detail
+                return MovieApiError.detail
             }
             .eraseToAnyPublisher()
     }
     
-    static func detail(movieId: Int) -> AnyPublisher<Movie, MovieApi.Error> {
+    public func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError> {
         
-    
+        
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-//        decoder.dateDecodingStrategy = .iso8601
         
         let url = Endpoints.detail(movieId).url
         print(url)
@@ -65,14 +54,14 @@ public extension MovieApi {
                 print(String(data: $0.data, encoding: .utf8)!)
                 return $0.data
             }
-            .decode(type: Movie.self, decoder: decoder)
+            .decode(type: MovieDto.self, decoder: decoder)
             .mapError { error in
                 print(error)
-                return MovieApi.Error.search
+                return MovieApiError.search
             }
             .eraseToAnyPublisher()
     }
-
+    
     enum Endpoints {
         case search(String)
         case detail(Int)
@@ -84,7 +73,7 @@ public extension MovieApi {
             ]
             return components
         }
-
+        
         var url: URL {
             var components = baseComponents
             switch self {

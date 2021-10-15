@@ -23,8 +23,8 @@ enum AppAction {
 
 struct AppEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
-    var search: (String) -> AnyPublisher<[Movie], MovieApi.Error>
-    var load: (Int) -> AnyPublisher<Movie, MovieApi.Error>
+    var search: (String) -> AnyPublisher<[Movie], MovieSearchError>
+    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
 }
 
 private extension MovieListEnvironment {
