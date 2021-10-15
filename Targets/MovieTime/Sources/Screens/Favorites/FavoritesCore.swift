@@ -10,9 +10,10 @@ import Foundation
 import ComposableArchitecture
 import Combine
 import MovieApi
+import IdentifiedCollections
 
 struct FavoritesState: Equatable {
-    var movieStates: [MovieState] = []
+    var movieStates: IdentifiedArrayOf<MovieState> = []
 }
 
 enum FavoritesAction {
@@ -33,10 +34,11 @@ let favoritesReducer = Reducer<FavoritesState, FavoritesAction, FavoritesEnviron
     Reducer { state, action, env in
         switch action {
         case .movie(index: let index, action: MovieAction.toggleFavorite):
-            return Effect(value: .toggleFavorite(state.movieStates[index].movie))
+            guard let movie = state.movieStates[id: index]?.movie else { return .none }
+            return Effect(value: .toggleFavorite(movie))
         case .toggleFavorite(let movie):
-            if let index = state.movieStates.firstIndex(where: { $0.id == movie.id }) {
-                state.movieStates.remove(at: index)
+            if let movie = state.movieStates[id: movie.id] {
+                state.movieStates.remove(id: movie.id)
             } else {
                 state.movieStates.append(MovieState(movie: movie))
             }

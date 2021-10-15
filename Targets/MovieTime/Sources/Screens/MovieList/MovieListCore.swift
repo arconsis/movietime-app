@@ -14,7 +14,7 @@ import Combine
 // MARK: - State
 struct MovieListState: Equatable {
     var searchTerm: String = ""
-    var movieStates: [MovieState] = []
+    var movieStates: IdentifiedArrayOf<MovieState> = []
 }
 
 // MARK: - Actions
@@ -59,7 +59,7 @@ Reducer { state, action, env in
             .catchToEffect()
             .map(MovieListAction.showMovies)
     case let .showMovies(.success(movies)):
-        state.movieStates = movies.map { MovieState(movie: $0) }
+        state.movieStates = IdentifiedArrayOf<MovieState>(uniqueElements: movies.map { MovieState(movie: $0) })
         return .none
     case .showMovies(.failure):
         state.movieStates = []
