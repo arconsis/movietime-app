@@ -10,44 +10,32 @@ import XCTest
 import Combine
 @testable import MovieTime
 import MovieApi
+import Mockingbird
 
 class MovieServiceTests: XCTestCase {
     
-    class MovieApiMock: MovieApiService {
-        
-        var movies: [MovieDto] = []
-        
-        func search(query: String) -> AnyPublisher<[MovieDto], MovieApiError> {
-            Just(movies).setFailureType(to: MovieApiError.self).eraseToAnyPublisher()
-        }
-        
-        func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError> {
-            guard let movie = movies.first else {
-                return Fail(error: MovieApiError.search).eraseToAnyPublisher()
-            }
-            return Just(movie).setFailureType(to: MovieApiError.self).eraseToAnyPublisher()
-        }
-    }
-    
     var sut: AppMovieService!
     var cancellable: Set<AnyCancellable> = []
-    var mock: MovieApiMock = MovieApiMock()
+    
+    var mockApiService = mock(MovieApiService.self)
 
     override func setUpWithError() throws {
-        sut = AppMovieService(api: mock)
+        sut = AppMovieService(api: mockApiService)
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        reset(mockApiService)
     }
 
     func testSetup() throws {
         XCTAssertNotNil(sut)
     }
     
-    func testSearch() {
+    func testSearchWithResult() {
         
-        mock.movies = [ MovieDto(id: 42) ]
+        given(mockApiService.search(query: any())).will { _ in
+            Just([ MovieDto(id: 42) ]).setFailureType(to: MovieApiError.self).eraseToAnyPublisher()
+        }
         
         let exp = expectation(description: "search")
         
@@ -63,5 +51,82 @@ class MovieServiceTests: XCTestCase {
             }.store(in: &cancellable)
 
         wait(for: [exp], timeout: 1)
+        
+        verify(mockApiService.search(query: "Marvel")).wasCalled(1)
     }
+    
+    func testSearchWithNoResult() {
+        
+        given(mockApiService.search(query: any())).will { _ in
+            Just([]).setFailureType(to: MovieApiError.self).eraseToAnyPublisher()
+        }
+        
+        let exp = expectation(description: "search")
+        
+        sut.search(query: "Marvel")
+            .sink { completion in
+                if case .failure(_) = completion {
+                    XCTFail("No error expected")
+                }
+                exp.fulfill()
+            } receiveValue: { movies in
+                XCTAssertTrue(movies.isEmpty)
+            }.store(in: &cancellable)
+
+        wait(for: [exp], timeout: 1)
+        
+        verify(mockApiService.search(query: "Marvel")).wasCalled(1)
+    }
+    
+    func testEmptySearchTerm() {
+        
+        given(mockApiService.search(query: any())).will { _ in
+            Just([ MovieDto(id: 42) ]).setFailureType(to: MovieApiError.self).eraseToAnyPublisher()
+        }
+
+        let exp = expectation(description: "search")
+        
+        sut.search(query: "")
+            .sink { completion in
+                if case .failure(let error) = completion {
+                    XCTAssertTrue(error == .invalidSearchTerm)
+                } else {
+                    XCTFail("Error expected")
+                }
+                exp.fulfill()
+            } receiveValue: { _ in
+                XCTFail("No movies expected")
+            }.store(in: &cancellable)
+
+        wait(for: [exp], timeout: 1)
+        
+        verify(mockApiService.search(query: any())).wasNeverCalled()
+    }
+    
+    func testSearchWithApiError() {
+        
+        given(mockApiService.search(query: any())).will { _ in
+            Fail(error: MovieApiError.search).eraseToAnyPublisher()
+        }
+        
+        let exp = expectation(description: "search")
+        
+        sut.search(query: "Marvel")
+            .sink { completion in
+                if case .failure(let error) = completion {
+                    XCTAssertTrue(error == .failed)
+                } else {
+                    XCTFail("Error expected")
+                }
+                exp.fulfill()
+            } receiveValue: { _ in
+                XCTFail("No movies expected")
+            }.store(in: &cancellable)
+
+        wait(for: [exp], timeout: 1)
+        
+        verify(mockApiService.search(query: "Marvel")).wasCalled(1)
+    }
+    
+    
 }

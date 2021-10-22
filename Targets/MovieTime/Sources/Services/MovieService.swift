@@ -16,6 +16,7 @@ protocol MovieService {
 
 enum MovieSearchError: Error {
     case failed
+    case invalidSearchTerm
 }
 
 struct AppMovieService: MovieService {
@@ -23,7 +24,10 @@ struct AppMovieService: MovieService {
     let api: MovieApiService
     
     func search(query: String) -> AnyPublisher<[Movie], MovieSearchError> {
-        api.search(query: query)
+        guard !query.isEmpty else {
+            return Fail(error: MovieSearchError.invalidSearchTerm).eraseToAnyPublisher()
+        }
+        return api.search(query: query)
             .receive(on: DispatchQueue.main)
             .map { $0.map(Movie.init) }
             .mapError { _ in .failed }
