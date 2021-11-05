@@ -14,7 +14,7 @@ final class MovieTimeTests: XCTestCase {
         MovieListEnvironment(
             mainQueue: scheduler.eraseToAnyScheduler(),
             search: { _ in Effect(value: movies).eraseToAnyPublisher() },
-            load: { _ in Fail(error: MovieApiError.detail).eraseToAnyPublisher() }
+            load: { _ in Fail(error: MovieDetailError.failed).eraseToAnyPublisher() }
         )
     }
     
@@ -22,7 +22,7 @@ final class MovieTimeTests: XCTestCase {
         MovieListEnvironment(
             mainQueue: scheduler.eraseToAnyScheduler(),
             search: { query in Effect(value: movies(query)).eraseToAnyPublisher() },
-            load: { _ in Fail(error: MovieApiError.detail).eraseToAnyPublisher() }
+            load: { _ in Fail(error: MovieDetailError.failed).eraseToAnyPublisher() }
         )
     }
     

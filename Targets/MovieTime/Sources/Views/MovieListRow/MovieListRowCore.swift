@@ -9,7 +9,6 @@
 import SwiftUI
 import ComposableArchitecture
 import Combine
-import MovieApi
 
 struct MovieState: Equatable, Identifiable {
     var movie: Movie
@@ -28,7 +27,7 @@ enum MovieAction: Equatable {
 }
 
 struct MovieEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
+    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
 }
 
 let movieReducer = Reducer<MovieState, MovieAction, MovieEnvironment>.combine(

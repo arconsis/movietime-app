@@ -8,7 +8,6 @@
 
 import Foundation
 import ComposableArchitecture
-import MovieApi
 import Combine
 
 // MARK: - State
@@ -29,7 +28,7 @@ enum MovieListAction: Equatable {
 struct MovieListEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
     var search: (String) -> AnyPublisher<[Movie], MovieSearchError>
-    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
+    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
 }
 
 // MARK: - Reducer

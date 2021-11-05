@@ -128,5 +128,51 @@ class MovieServiceTests: XCTestCase {
         verify(mockApiService.search(query: "Marvel")).wasCalled(1)
     }
     
+    func testMovieDetailSuccess() {
+        given(mockApiService.detail(movieId: any())).will { _ in
+            Just(MovieDto(id: 1)).setFailureType(to: MovieApiError.self).eraseToAnyPublisher()
+        }
+        
+        let exp = expectation(description: "detail")
+        
+        sut.movie(withId: 1)
+            .sink { completion in
+                if case .failure(_) = completion {
+                    XCTFail("No error expected")
+                }
+                exp.fulfill()
+            } receiveValue: { movie in
+                XCTAssertEqual(movie.id, 1)
+            }.store(in: &cancellable)
+        
+        wait(for: [exp], timeout: 1)
+        
+        verify(mockApiService.detail(movieId: 1)).wasCalled(1)
+    }
+    
+    func testMovieDetailApiError() {
+        
+        given(mockApiService.detail(movieId: any())).will { _ in
+            Fail(error: MovieApiError.detail).eraseToAnyPublisher()
+        }
+        
+        let exp = expectation(description: "movie detail publisher completed")
+        
+        sut.movie(withId: 1)
+            .sink { completion in
+                if case .failure(let error) = completion {
+                    XCTAssertTrue(error == .failed)
+                } else {
+                    XCTFail("Error expected")
+                }
+                exp.fulfill()
+            } receiveValue: { _ in
+                XCTFail("No movies expected")
+            }.store(in: &cancellable)
+
+        wait(for: [exp], timeout: 1)
+        
+        verify(mockApiService.detail(movieId: 1)).wasCalled(1)
+    }
     
 }

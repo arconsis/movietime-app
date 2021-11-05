@@ -1,6 +1,5 @@
 import SwiftUI
 import ComposableArchitecture
-import MovieApi
 import Combine
 
 @main
@@ -17,17 +16,10 @@ struct MovieTime: App {
     }
 }
 
-let movieService: MovieService = AppMovieService(api: TheMovieDBApi())
-
 extension AppEnvironment {
     static let app: AppEnvironment = AppEnvironment(
         mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
         search: movieService.search,
-        load: { movieId in
-            TheMovieDBApi().detail(movieId:movieId)
-                .receive(on: DispatchQueue.main)
-                .map { Movie(movie: $0) }
-                .eraseToAnyPublisher()
-        }
+        load: movieService.movie
     )
 }

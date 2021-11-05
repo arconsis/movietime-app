@@ -9,7 +9,6 @@
 import SwiftUI
 import ComposableArchitecture
 import Combine
-import MovieApi
 
 struct MovieDetailScreen: View {
     
@@ -140,13 +139,8 @@ struct MovieDetailScreen_Previews: PreviewProvider {
 extension MovieDetailScreen {
     static func detail(for movie: Movie) -> MovieDetailScreen {
         let environment = MovieDetailEnvironment(
-            load: { movieId in
-            TheMovieDBApi().detail(movieId:movieId)
-                .receive(on: DispatchQueue.main)
-                .map { Movie(movie: $0) }
-                .eraseToAnyPublisher()
-            
-        })
+            load: movieService.movie
+        )
         return MovieDetailScreen(
             store: Store(initialState: MovieDetailState(movie: movie),
                          reducer: movieDetailReducer,

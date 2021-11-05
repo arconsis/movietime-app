@@ -10,13 +10,20 @@ import Foundation
 import Combine
 import MovieApi
 
+let movieService: MovieService = AppMovieService(api: TheMovieDBApi())
+
 protocol MovieService {
     func search(query: String) -> AnyPublisher<[Movie], MovieSearchError>
+    func movie(withId movieId: Int) -> AnyPublisher<Movie, MovieDetailError>
 }
 
 enum MovieSearchError: Error {
     case failed
     case invalidSearchTerm
+}
+
+enum MovieDetailError: Error {
+    case failed
 }
 
 struct AppMovieService: MovieService {
@@ -34,5 +41,11 @@ struct AppMovieService: MovieService {
             .eraseToAnyPublisher()
     }
     
-    
+    func movie(withId movieId: Int) -> AnyPublisher<Movie, MovieDetailError> {
+        api.detail(movieId:movieId)
+            .receive(on: DispatchQueue.main)
+            .map { Movie(movie: $0) }
+            .mapError { _ in .failed }
+            .eraseToAnyPublisher()
+    }
 }

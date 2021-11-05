@@ -9,7 +9,6 @@
 import Foundation
 import Combine
 import ComposableArchitecture
-import MovieApi
 
 struct AppState: Equatable {
     var movieList: MovieListState = MovieListState()
@@ -24,7 +23,7 @@ enum AppAction {
 struct AppEnvironment {
     var mainQueue: AnySchedulerOf<DispatchQueue>
     var search: (String) -> AnyPublisher<[Movie], MovieSearchError>
-    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
+    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
 }
 
 private extension MovieListEnvironment {

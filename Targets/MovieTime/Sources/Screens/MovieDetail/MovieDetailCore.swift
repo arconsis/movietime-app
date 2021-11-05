@@ -8,7 +8,6 @@
 
 import Foundation
 import ComposableArchitecture
-import MovieApi
 import Combine
 import CoreData
 
@@ -21,13 +20,13 @@ struct MovieDetailState: Equatable {
 // MARK: - Actions
 enum MovieDetailAction: Equatable {
     case viewAppeared
-    case updateMovie(Result<Movie, MovieApiError>)
+    case updateMovie(Result<Movie, MovieDetailError>)
     case toggleFavorite
 }
 
 // MARK: - Environment
 struct MovieDetailEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieApiError>
+    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
 }
 
 // MARK: - Reducer

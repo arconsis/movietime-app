@@ -9,7 +9,6 @@
 import Foundation
 import ComposableArchitecture
 import Combine
-import MovieApi
 import IdentifiedCollections
 
 struct FavoritesState: Equatable {
@@ -22,7 +21,7 @@ enum FavoritesAction {
 }
 
 struct FavoritesEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieApiError>    
+    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>    
 }
 
 let favoritesReducer = Reducer<FavoritesState, FavoritesAction, FavoritesEnvironment>.combine(
