@@ -15,7 +15,8 @@ extension Project {
         return Project(name: name,
                        organizationName: "arconsis",
                        packages: [
-                        .remote(url: "https://github.com/pointfreeco/swift-composable-architecture", requirement: .upToNextMajor(from: "0.17.0"))
+                        .remote(url: "https://github.com/pointfreeco/swift-composable-architecture", requirement: .upToNextMajor(from: "0.17.0")),
+                        .remote(url: "https://github.com/birdrides/mockingbird", requirement: .upToNextMajor(from: "0.18.1"))
                        ],
                        targets: targets)
     }
@@ -72,7 +73,8 @@ extension Project {
             infoPlist: .default,
             sources: ["Targets/\(name)/Tests/**"],
             dependencies: [
-                .target(name: "\(name)")
+                .target(name: "\(name)"),
+                .package(product: "Mockingbird")
         ])
         return [mainTarget, testTarget]
     }
