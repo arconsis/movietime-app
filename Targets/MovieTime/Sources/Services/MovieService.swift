@@ -10,7 +10,6 @@ import Foundation
 import Combine
 import MovieApi
 
-let movieService: MovieService = AppMovieService(api: TheMovieDBApi())
 
 protocol MovieService {
     func search(query: String) -> AnyPublisher<[Movie], MovieSearchError>

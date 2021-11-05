@@ -1,6 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 import Combine
+import MovieApi
 
 @main
 struct MovieTime: App {
@@ -19,7 +20,7 @@ struct MovieTime: App {
 extension AppEnvironment {
     static let app: AppEnvironment = AppEnvironment(
         mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-        search: movieService.search,
-        load: movieService.movie
+        movieService: AppMovieService(api: TheMovieDBApi()),
+        favoriteService: InMemoryFavoriteService()
     )
 }

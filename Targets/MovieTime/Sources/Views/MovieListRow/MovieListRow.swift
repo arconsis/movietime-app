@@ -30,7 +30,7 @@ struct MovieListRow: View {
                             .lineLimit(5)
                             .font(.caption)
                     }
-                    Image(systemName: viewStore.movie.isFavorite ? "heart.fill" : "heart")
+                    Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
                         .resizable()
                         .frame(width: 24, height: 24)
                         .onTapGesture {
@@ -48,13 +48,16 @@ struct MovieListRow: View {
                 Button {
                     viewStore.send(.toggleFavorite)
                 } label: {
-                    Image(systemName: viewStore.movie.isFavorite ? "heart.slash.fill" : "heart.fill")
+                    Image(systemName: viewStore.isFavorite ? "heart.slash.fill" : "heart.fill")
                 }
             }
             .sheet(isPresented: viewStore.binding(get: \.isDetailShown, send: MovieAction.showDetails)) {
                 IfLetStore(store.scope(state: \.detail , action: MovieAction.detail), then: {
                     MovieDetailScreen(store:$0)
                 })
+            }
+            .onAppear {
+                viewStore.send(.viewAppeared)
             }
         }
     }

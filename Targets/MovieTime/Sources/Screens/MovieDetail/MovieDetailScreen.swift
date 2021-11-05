@@ -91,12 +91,12 @@ struct MovieDetailScreen: View {
                         
                         HStack {
                             Label {
-                                Text(viewStore.movie.isFavorite ? "Remove from favorites" : "Add to favorites")
+                                Text(viewStore.isFavorite ? "Remove from favorites" : "Add to favorites")
                                     .font(.caption)
                                     .bold()
                                     .underline()
                             } icon: {
-                                Image(systemName: viewStore.movie.isFavorite ? "heart.fill" : "heart")
+                                Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
                             }
                         }
                         .foregroundColor(.yellow)
@@ -125,26 +125,26 @@ struct MovieDetailScreen: View {
     }
 }
 
-struct MovieDetailScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        MovieDetailScreen(
-            store: Store(initialState: MovieDetailState(movie: Movie.preview.first!),
-                         reducer: movieDetailReducer,
-                         environment: MovieDetailEnvironment(load: { movieId in
-            CurrentValueSubject(Movie.preview.first!)
-            .eraseToAnyPublisher() } )))
-    }
-}
-
-extension MovieDetailScreen {
-    static func detail(for movie: Movie) -> MovieDetailScreen {
-        let environment = MovieDetailEnvironment(
-            load: movieService.movie
-        )
-        return MovieDetailScreen(
-            store: Store(initialState: MovieDetailState(movie: movie),
-                         reducer: movieDetailReducer,
-                         environment: environment))
-    }
-}
+//struct MovieDetailScreen_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MovieDetailScreen(
+//            store: Store(initialState: MovieDetailState(movie: Movie.preview.first!),
+//                         reducer: movieDetailReducer,
+//                         environment: MovieDetailEnvironment(load: { movieId in
+//            CurrentValueSubject(Movie.preview.first!)
+//            .eraseToAnyPublisher() } )))
+//    }
+//}
+//
+//extension MovieDetailScreen {
+//    static func detail(for movie: Movie) -> MovieDetailScreen {
+//        let environment = MovieDetailEnvironment(
+//            load: movieService.movie
+//        )
+//        return MovieDetailScreen(
+//            store: Store(initialState: MovieDetailState(movie: movie),
+//                         reducer: movieDetailReducer,
+//                         environment: environment))
+//    }
+//}
 

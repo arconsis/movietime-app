@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 import MovieApi
 
-struct Movie: Equatable, Identifiable {
+struct Movie: Equatable, Identifiable, Hashable {
     private static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         // "2019-03-06"
@@ -23,7 +23,6 @@ struct Movie: Equatable, Identifiable {
     let overview: String?
     let posterThumbnail: URL?
     let posterUrl: URL?
-    var isFavorite: Bool = false
     let releaseDate: Date?
     let backdropUrl: URL?
     let genres: [String]

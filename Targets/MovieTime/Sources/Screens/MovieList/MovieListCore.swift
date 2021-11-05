@@ -24,19 +24,13 @@ enum MovieListAction: Equatable {
     case movie(index: Int, action: MovieAction)
 }
 
-// MARK: - Environment
-struct MovieListEnvironment {
-    var mainQueue: AnySchedulerOf<DispatchQueue>
-    var search: (String) -> AnyPublisher<[Movie], MovieSearchError>
-    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
-}
 
 // MARK: - Reducer
-let movieListReducer = Reducer<MovieListState, MovieListAction, MovieListEnvironment>.combine(
+let movieListReducer = Reducer<MovieListState, MovieListAction, AppEnvironment>.combine(
     movieReducer.forEach(
         state: \.movieStates,
         action: /MovieListAction.movie(index:action:),
-        environment: { MovieEnvironment(load: $0.load) }),
+        environment: { $0 }),
 Reducer { state, action, env in
     switch action {
     case let .searchFieldChanged(term):
@@ -53,7 +47,7 @@ Reducer { state, action, env in
         guard !term.isEmpty else {
             return Effect(value: .showMovies(.success([])))
         }
-        return env.search(term)
+        return env.movieService.search(query: term)
             .receive(on: env.mainQueue)
             .catchToEffect()
             .map(MovieListAction.showMovies)

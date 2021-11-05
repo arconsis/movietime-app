@@ -14,6 +14,7 @@ import CoreData
 // MARK: - State
 struct MovieDetailState: Equatable {
     var movie: Movie
+    var isFavorite: Bool = false
     var isLoading: Bool = false
 }
 
@@ -21,35 +22,39 @@ struct MovieDetailState: Equatable {
 enum MovieDetailAction: Equatable {
     case viewAppeared
     case updateMovie(Result<Movie, MovieDetailError>)
+    case updateFavorite(Result<Bool, Never>)
     case toggleFavorite
 }
 
-// MARK: - Environment
-struct MovieDetailEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
-}
 
 // MARK: - Reducer
-let movieDetailReducer = Reducer<MovieDetailState, MovieDetailAction, MovieDetailEnvironment> { state, action, env in
+let movieDetailReducer = Reducer<MovieDetailState, MovieDetailAction, AppEnvironment> { state, action, env in
     switch action {
     case .viewAppeared:
         state.isLoading = true
-        return env.load(state.movie.id)
-            .receive(on: DispatchQueue.main)
-            .catchToEffect()
-            .map(MovieDetailAction.updateMovie)
+        return .merge(
+            env.movieService.movie(withId: state.movie.id)
+                .receive(on: DispatchQueue.main)
+                .catchToEffect()
+                .map(MovieDetailAction.updateMovie),
+            env.favoriteService.isFavorite(movieId: state.movie.id)
+                .receive(on: DispatchQueue.main)
+                .catchToEffect()
+                .map(MovieDetailAction.updateFavorite)
+        )
+    case .updateFavorite(.success(let isFavorite)):
+        state.isFavorite = isFavorite
+        return .none
     case .updateMovie(.success(let movie)):
         state.isLoading = false
-        let isFavorite = state.movie.isFavorite
         state.movie = movie
-        state.movie.isFavorite = isFavorite
         return .none
     case .updateMovie(.failure):
         state.isLoading = false
             // show update error?
         return .none
     case .toggleFavorite:
-        state.movie.isFavorite.toggle()
+        state.isFavorite = env.favoriteService.toggle(movie: state.movie)
         return .none
     }
 }

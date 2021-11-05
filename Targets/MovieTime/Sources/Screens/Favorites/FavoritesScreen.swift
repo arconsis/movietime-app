@@ -15,6 +15,7 @@ struct FavoritesScreen: View {
     
     var body: some View {
         WithViewStore(store) { viewStore in
+            Group {
             if viewStore.movieStates.isEmpty {
                 Label("No **favorites** set", systemImage: "heart.fill")
             } else {
@@ -24,6 +25,10 @@ struct FavoritesScreen: View {
                                  content: MovieListRow.init(store:))
                 }
                 .listStyle(.plain)
+            }
+            }
+            .onAppear {
+                viewStore.send(.viewAppeared)
             }
         }
         .navigationTitle("Favorites")

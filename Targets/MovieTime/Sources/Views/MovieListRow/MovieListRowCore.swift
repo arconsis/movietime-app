@@ -12,6 +12,7 @@ import Combine
 
 struct MovieState: Equatable, Identifiable {
     var movie: Movie
+    var isFavorite: Bool = false
     var isDetailShown: Bool = false
     var detail: MovieDetailState?
     
@@ -21,32 +22,36 @@ struct MovieState: Equatable, Identifiable {
 }
 
 enum MovieAction: Equatable {
+    case viewAppeared
+    case updateFavorite(Result<Bool, Never>)
     case toggleFavorite
     case detail(MovieDetailAction)
     case showDetails(Bool)
 }
 
-struct MovieEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>
-}
-
-let movieReducer = Reducer<MovieState, MovieAction, MovieEnvironment>.combine(
+let movieReducer = Reducer<MovieState, MovieAction, AppEnvironment>.combine(
     movieDetailReducer.optional().pullback(
         state: \.detail,
         action: /MovieAction.detail,
-        environment: { MovieDetailEnvironment(load: $0.load) } ),
+        environment: { $0 } ),
 
- Reducer { state, action, _ in
+ Reducer { state, action, env in
     switch action {
+    case .viewAppeared:
+        return env.favoriteService.isFavorite(movieId: state.movie.id)
+                .receive(on: DispatchQueue.main)
+                .catchToEffect()
+                .map(MovieAction.updateFavorite)
     case .toggleFavorite:
-        state.movie.isFavorite.toggle()
+        state.isFavorite = env.favoriteService.toggle(movie: state.movie)
+        return .none
+    case .updateFavorite(.success(let isFavorite)):
+        state.isFavorite = isFavorite
         return .none
     case .showDetails(let isShowing):
         state.isDetailShown = isShowing
         state.detail = MovieDetailState(movie: state.movie)
         return .none
-    case .detail(.toggleFavorite):
-        return Effect(value: .toggleFavorite)
     default: return .none
     }
 })

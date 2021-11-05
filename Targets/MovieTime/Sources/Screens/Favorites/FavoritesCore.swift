@@ -16,31 +16,26 @@ struct FavoritesState: Equatable {
 }
 
 enum FavoritesAction {
-    case toggleFavorite(Movie)
+    case viewAppeared
+    case updateMovies(Result<Set<Movie>, Never>)
     case movie(index: Int, action: MovieAction)
 }
 
-struct FavoritesEnvironment {
-    var load: (Int) -> AnyPublisher<Movie, MovieDetailError>    
-}
-
-let favoritesReducer = Reducer<FavoritesState, FavoritesAction, FavoritesEnvironment>.combine(
+let favoritesReducer = Reducer<FavoritesState, FavoritesAction, AppEnvironment>.combine(
     movieReducer.forEach(
         state: \.movieStates,
         action: /FavoritesAction.movie(index:action:),
-        environment: { MovieEnvironment(load: $0.load) }),
+        environment: { $0 }),
     
     Reducer { state, action, env in
         switch action {
-        case .movie(index: let index, action: MovieAction.toggleFavorite):
-            guard let movie = state.movieStates[id: index]?.movie else { return .none }
-            return Effect(value: .toggleFavorite(movie))
-        case .toggleFavorite(let movie):
-            if let movie = state.movieStates[id: movie.id] {
-                state.movieStates.remove(id: movie.id)
-            } else {
-                state.movieStates.append(MovieState(movie: movie))
-            }
+        case .viewAppeared:
+            return env.favoriteService.favorites
+                .receive(on: env.mainQueue)
+                .catchToEffect()
+                .map(FavoritesAction.updateMovies)
+        case .updateMovies(.success(let movies)):
+            state.movieStates = IdentifiedArrayOf(uniqueElements: movies.map { MovieState(movie: $0)})
             return .none
         default: return .none
         }
