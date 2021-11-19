@@ -21,6 +21,6 @@ extension AppEnvironment {
     static let app: AppEnvironment = AppEnvironment(
         mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
         movieService: AppMovieService(api: TheMovieDBApi()),
-        favoriteService: InMemoryFavoriteService()
+        favoriteService: CoreDataFavoriteService()
     )
 }
