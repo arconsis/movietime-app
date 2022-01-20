@@ -32,6 +32,7 @@ let movieDetailReducer = Reducer<MovieDetailState, MovieDetailAction, AppEnviron
     switch action {
     case .viewAppeared:
         state.isLoading = true
+        state.isFavorite = env.favoriteService.isFavorite(movieId: state.movie.id)
         return .merge(
             env.movieService.movie(withId: state.movie.id)
                 .receive(on: DispatchQueue.main)
@@ -54,7 +55,7 @@ let movieDetailReducer = Reducer<MovieDetailState, MovieDetailAction, AppEnviron
             // show update error?
         return .none
     case .toggleFavorite:
-        state.isFavorite = env.favoriteService.toggle(movie: state.movie)
+        env.favoriteService.toggle(movie: state.movie)
         return .none
     }
 }

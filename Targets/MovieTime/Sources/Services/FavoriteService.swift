@@ -11,8 +11,8 @@ import Combine
 import CoreData
 
 protocol FavoriteService {
-    var favorites: AnyPublisher<Set<Movie>, Never> { get }
-    
+    var publisher: AnyPublisher<Set<Movie>, Never> { get }
+    func favorites() -> Set<Movie>
     func add(movie: Movie)
     func remove(movieId: Int)
     func isFavorite(movieId: Int) -> Bool
@@ -20,7 +20,7 @@ protocol FavoriteService {
 
 extension FavoriteService {
     func isFavorite(movieId: Int) -> AnyPublisher<Bool, Never> {
-        favorites
+        publisher
             .map { favorites in
                 favorites.contains { movie in
                     movie.id == movieId
@@ -30,15 +30,13 @@ extension FavoriteService {
             .eraseToAnyPublisher()
     }
     
-    func toggle(movie: Movie) -> Bool {
+    func toggle(movie: Movie) {
         let movieId = movie.id
         if isFavorite(movieId: movieId) {
             remove(movieId: movieId)
         } else {
             add(movie: movie)
         }
-        
-        return isFavorite(movieId: movieId)
     }
 }
 
@@ -47,8 +45,12 @@ class InMemoryFavoriteService: FavoriteService {
     @Published
     private var store: Set<Movie> = []
     
-    var favorites: AnyPublisher<Set<Movie>, Never> {
+    var publisher: AnyPublisher<Set<Movie>, Never> {
         $store.eraseToAnyPublisher()
+    }
+
+    func favorites() -> Set<Movie> {
+        return store
     }
     
     func add(movie: Movie) {
@@ -64,78 +66,77 @@ class InMemoryFavoriteService: FavoriteService {
     func isFavorite(movieId: Int) -> Bool {
         store.contains { $0.id == movieId }
     }
-    
-    
 }
 
 class CoreDataFavoriteService: FavoriteService {
-    var favorites: AnyPublisher<Set<Movie>, Never> {
-        $store.eraseToAnyPublisher()
-    }
-    
-    
+
     let persistenceController = MoviePersistenceController()
-    
+
     lazy var context: NSManagedObjectContext = {
         return persistenceController.container.newBackgroundContext()
     }()
-    
+
+    var publisher: AnyPublisher<Set<Movie>, Never> {
+        persistenceController.publisher(for: MovieDB.self, in: context)
+            .map { Set($0.map(Movie.init)) }
+            .eraseToAnyPublisher()
+    }
+
+    func favorites() -> Set<Movie> {
+        var movies: [MovieDB] = []
+        context.performAndWait {
+            movies = (try? self.context.fetch(MovieDB.fetchRequest())) ?? []
+        }
+        return Set(movies.map(Movie.init))
+    }
+
     func isFavorite(movieId: Int) -> Bool {
         var isFavorite: Bool = false
         context.performAndWait {
             do {
-                let result = try self.context.fetch(self.fetchRequest(movieId: movieId))
-                isFavorite = !result.isEmpty
+                let movie = try MovieDB.fetch(movieId: movieId, context: self.context)
+                isFavorite = movie != nil
             } catch {
                 print("Error fetching context: \(error.localizedDescription)")
             }
         }
         return isFavorite
     }
-    
-    private func fetchRequest(movieId: Int) -> NSFetchRequest<MovieDB> {
-        let request = MovieDB.fetchRequest()
-        request.predicate = NSPredicate(format: "id = %d", movieId)
-        return request
-    }
-    
-    @Published
-    private var store: Set<Movie> = []
-    
-    init() {
-        updateStore()
-    }
+
+    init() {}
     
     func add(movie: Movie) {
-        //        context.perform {
-        _ = MovieDB(movie: movie, context: self.context)
-        self.persistenceController.save(context: self.context)
-        //        }
-        updateStore()
+        context.perform {
+            let movieDB = MovieDB(context: self.context)
+            movieDB.map(movie: movie)
+            self.persistenceController.save(context: self.context)
+        }
     }
     
     func remove(movieId: Int) {
-        //        context.perform {
-        if let movie = try? self.context.fetch(self.fetchRequest(movieId: movieId)).first {
-            self.context.delete(movie)
-            self.persistenceController.save(context: self.context)
+        context.perform {
+            if let movie = try? MovieDB.fetch(movieId: movieId, context: self.context) {
+                self.context.delete(movie)
+                self.persistenceController.save(context: self.context)
+            }
         }
-        //        }
-        updateStore()
-    }
-    
-    private func updateStore() {
-        //        context.perform {
-        let allMovies: [Movie]? = try? self.context.fetch(MovieDB.fetchRequest()).map(Movie.init)
-        self.store = Set(allMovies ?? [])
-        
-        //        }
+
     }
 }
 
 extension MovieDB {
-    convenience init(movie: Movie, context:NSManagedObjectContext) {
-        self.init(context: context)
+
+    static func fetch(movieId: Int, context: NSManagedObjectContext) throws -> MovieDB? {
+        return try context.fetch(fetchRequest(movieId: movieId)).first
+    }
+
+    static func fetchRequest(movieId: Int) -> NSFetchRequest<MovieDB> {
+        let request = MovieDB.fetchRequest()
+        request.predicate = NSPredicate(format: "id = %d", movieId)
+        return request
+    }
+
+    func map(movie: Movie) {
         id = Int64(movie.id)
         title = movie.title
         overview = movie.overview

@@ -62,7 +62,10 @@ extension Project {
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
-            dependencies: dependencies + [.package(product: "ComposableArchitecture")]
+            dependencies: dependencies + [.package(product: "ComposableArchitecture")],
+            coreDataModels: [
+                CoreDataModel("Targets/\(name)/Sources/Services/MovieDataModel.xcdatamodeld")
+            ]
         )
 
         let testTarget = Target(

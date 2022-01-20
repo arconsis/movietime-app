@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import Combine
 
 struct MoviePersistenceController {
     
@@ -37,6 +38,18 @@ struct MoviePersistenceController {
             }
         }
     }
+
+    func publisher<T: NSManagedObject>(for type: T.Type, in context: NSManagedObjectContext) -> AnyPublisher<[T], Never> {
+        let notification = NSManagedObjectContext.didSaveObjectIDsNotification
+        return NotificationCenter.default.publisher(for: notification, object: nil)
+            .compactMap { _ in
+                let entities = try? context.fetch(T.fetchRequest()) as? [T]
+                return entities
+            }
+            .eraseToAnyPublisher()
+    }
+
+
     
 //    func perform(action: @escaping (NSManagedObjectContext) -> Void) {
 //        container.performBackgroundTask { context in

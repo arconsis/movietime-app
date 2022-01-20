@@ -19,6 +19,7 @@ enum FavoritesAction {
     case viewAppeared
     case updateMovies(Result<Set<Movie>, Never>)
     case movie(index: Int, action: MovieAction)
+    case setMovies(Set<Movie>)
 }
 
 let favoritesReducer = Reducer<FavoritesState, FavoritesAction, AppEnvironment>.combine(
@@ -30,14 +31,20 @@ let favoritesReducer = Reducer<FavoritesState, FavoritesAction, AppEnvironment>.
     Reducer { state, action, env in
         switch action {
         case .viewAppeared:
-            return env.favoriteService.favorites
-                .receive(on: env.mainQueue)
-                .catchToEffect()
-                .map(FavoritesAction.updateMovies)
+            return .merge(
+                env.favoriteService.publisher
+                    .receive(on: env.mainQueue)
+                    .catchToEffect()
+                    .map(FavoritesAction.updateMovies),
+                Effect(value: .setMovies(env.favoriteService.favorites()))
+            )
         case .updateMovies(.success(let movies)):
-            state.movieStates = IdentifiedArrayOf(uniqueElements: movies.map { MovieState(movie: $0)})
+            return Effect(value: .setMovies(movies))
+        case .setMovies(let movieSet):
+            let sortedMovies = movieSet.sorted { $0.title < $1.title}
+            state.movieStates = IdentifiedArrayOf(uniqueElements: sortedMovies.map { MovieState(movie: $0)})
             return .none
         default: return .none
         }
-}
+    }
 )

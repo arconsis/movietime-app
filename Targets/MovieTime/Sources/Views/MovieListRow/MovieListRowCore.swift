@@ -38,12 +38,13 @@ let movieReducer = Reducer<MovieState, MovieAction, AppEnvironment>.combine(
  Reducer { state, action, env in
     switch action {
     case .viewAppeared:
+        state.isFavorite = env.favoriteService.isFavorite(movieId: state.movie.id)
         return env.favoriteService.isFavorite(movieId: state.movie.id)
                 .receive(on: DispatchQueue.main)
                 .catchToEffect()
                 .map(MovieAction.updateFavorite)
     case .toggleFavorite:
-        state.isFavorite = env.favoriteService.toggle(movie: state.movie)
+        env.favoriteService.toggle(movie: state.movie)
         return .none
     case .updateFavorite(.success(let isFavorite)):
         state.isFavorite = isFavorite
