@@ -1,0 +1,22 @@
+import Foundation
+import ComposableArchitecture
+
+enum {{ name|capitalize }} {
+    struct State: Equatable {
+
+    }
+
+    enum Action {
+
+    }
+
+    struct Environment {
+
+    }
+
+    static let reducer = Reducer<State, Action, Environment> { state, action, env in
+        switch action {
+        default: return .none
+        }
+    }
+}

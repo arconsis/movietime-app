@@ -1,0 +1,13 @@
+import SwiftUI
+import ComposableArchitecture
+
+struct {{ name }}Screen: View {
+
+    let store: Store<{{ name }}.State, {{ name }}.Action>
+
+    var body: some View {
+        WithViewStore(store) { viewStore in
+
+        }
+    }
+}
