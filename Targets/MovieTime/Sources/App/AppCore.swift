@@ -11,13 +11,15 @@ import Combine
 import ComposableArchitecture
 
 struct AppState: Equatable {
-    var movieList: MovieListState = MovieListState()
+    var search: Search.State = Search.State()
     var favorites: FavoritesState = FavoritesState()
+    var lists: MyLists.State = .init()
 }
 
 enum AppAction {
-    case movieList(action: MovieListAction)
+    case search(action: Search.Action)
     case favorites(action: FavoritesAction)
+    case lists(action: MyLists.Action)
 }
 
 struct AppEnvironment {
@@ -28,10 +30,15 @@ struct AppEnvironment {
 
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-    movieListReducer.pullback(
-        state: \.movieList,
-        action: /AppAction.movieList,
+    Search.reducer.pullback(
+        state: \.search,
+        action: /AppAction.search,
         environment: { $0 }),
+    
+    MyLists.reducer.pullback(
+        state: \.lists,
+        action: /AppAction.lists,
+        environment: { _ in .init() }),
     
     favoritesReducer.pullback(
         state: \.favorites,
@@ -40,7 +47,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     
     .init { state, action ,_ in
         switch action {
-        
+        case .lists(action: .addList):
+            print("Add list in App reducer")
+            return .none
         default:
             return .none
         }

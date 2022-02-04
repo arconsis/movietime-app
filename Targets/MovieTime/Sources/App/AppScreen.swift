@@ -16,10 +16,16 @@ struct AppScreen: View {
     var body: some View {
         TabView {
             NavigationView {
-                MovieListScreen(store: store.scope(state: \.movieList, action: AppAction.movieList))
+                SearchScreen(store: store.scope(state: \.search, action: AppAction.search))
             }
             .tabItem {
                 Label("Search", systemImage: "magnifyingglass")
+            }
+            NavigationView {
+                MyListsScreen(store: store.scope(state: \.lists, action: AppAction.lists))
+            }
+            .tabItem {
+                Label("My Lists", systemImage: "list.star")
             }
             NavigationView {
                 FavoritesScreen(store: store.scope(state: \.favorites, action: AppAction.favorites))

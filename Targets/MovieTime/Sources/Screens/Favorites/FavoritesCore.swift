@@ -31,19 +31,16 @@ let favoritesReducer = Reducer<FavoritesState, FavoritesAction, AppEnvironment>.
     Reducer { state, action, env in
         switch action {
         case .viewAppeared:
-            return .merge(
-                env.favoriteService.publisher
-                    .receive(on: env.mainQueue)
-                    .catchToEffect()
-                    .map(FavoritesAction.updateMovies),
-                Effect(value: .setMovies(env.favoriteService.favorites()))
-            )
+            return Effect(value: .setMovies(env.favoriteService.favorites()))
+            
         case .updateMovies(.success(let movies)):
             return Effect(value: .setMovies(movies))
         case .setMovies(let movieSet):
             let sortedMovies = movieSet.sorted { $0.title < $1.title}
             state.movieStates = IdentifiedArrayOf(uniqueElements: sortedMovies.map { MovieState(movie: $0)})
             return .none
+        case .movie(let index, .updateFavorite):
+            return Effect(value: .setMovies(env.favoriteService.favorites()))
         default: return .none
         }
     }
