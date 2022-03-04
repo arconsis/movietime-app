@@ -10,14 +10,7 @@ import Foundation
 import SwiftUI
 import MovieApi
 
-struct Movie: Equatable, Identifiable, Hashable {
-    private static var dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        // "2019-03-06"
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
-    
+struct Movie: Equatable, Identifiable, Hashable {    
     let id: Int
     let title: String
     let overview: String?
@@ -37,17 +30,35 @@ extension Movie {
     init(movie: MovieApi.MovieDto) {
         id = movie.id
         title = movie.title ?? "NA"
-        overview = movie.overview
-        posterUrl = movie.createURL(path: movie.posterPath, size: .original)
-        posterThumbnail =  movie.createURL(path: movie.posterPath)
-        releaseDate = movie.releaseDate.flatMap { Movie.dateFormatter.date(from: $0) }
-        backdropUrl = movie.createURL(path: movie.backdropPath, size: .original)
+        overview = movie.description
+        posterUrl = movie.poster?.original
+        posterThumbnail =  movie.poster?.thumbnail
+        releaseDate = movie.releaseDate//.flatMap { Movie.dateFormatter.date(from: $0) }
+        backdropUrl = movie.backdrop?.original
         genres = movie.genres?.map(\.name) ?? []
         voteAverage = movie.voteAverage ?? 0.0
-        status = movie.status ?? "unknown"
-        revenue = movie.revenue ?? 0
+        status = "unknown"
+        revenue = 0
         tagline = movie.tagline ?? ""
         runtime = movie.runtime ?? 0
+    }
+}
+
+extension Movie {
+    init(movie: MovieApi.ListMovieDto) {
+        id = movie.id
+        title = movie.title ?? "NA"
+        overview = movie.description
+        posterUrl = movie.poster?.original
+        posterThumbnail =  movie.poster?.thumbnail
+        releaseDate = movie.releaseDate//.flatMap { Movie.dateFormatter.date(from: $0) }
+        backdropUrl = nil
+        genres = []
+        voteAverage = 0.0
+        status = "unknown"
+        revenue =  0
+        tagline = ""
+        runtime = 0
     }
 }
 

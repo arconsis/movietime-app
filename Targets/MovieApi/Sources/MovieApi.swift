@@ -3,35 +3,48 @@ import Combine
 import SwiftUI
 
 public protocol MovieApiService {
-    func search(query: String) -> AnyPublisher<[MovieDto], MovieApiError>
+    func search(query: String) -> AnyPublisher<[ListMovieDto], MovieApiError>
     func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError>
 }
-
-
-
 
 public enum MovieApiError: Swift.Error {
     case search
     case detail
 }
 
-
-public struct TheMovieDBApi: MovieApiService {
+public class MovieTimeBff: MovieApiService {
     
-    public init(){}
+    private let dateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        // "2019-03-06"
+        formatter.formatOptions = [.withFullDate]
+        return formatter
+    }()
     
-    public func search(query: String) -> AnyPublisher<[MovieDto], MovieApiError> {
+    private let session: URLSession
+    private let decoder: JSONDecoder
+    
+    public init(){
+        session = URLSession(configuration: .default)
+        decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom {
+            let container = try $0.singleValueContainer()
+            let string = try container.decode(String.self)
+            guard let date = self.dateFormatter.date(from: string) else {
+                throw DecodingError.dataCorruptedError(in: container,
+                                                       debugDescription: "Invalid date: " + string)
+            }
+            return date
+        }
         
-        
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
+    }
+    
+    public func search(query: String) -> AnyPublisher<[ListMovieDto], MovieApiError> {
+    
         let url = Endpoints.search(query).url
-        
-        let session = URLSession(configuration: .default)
         return session.dataTaskPublisher(for: url)
             .map { $0.data }
-            .decode(type: PageContainerDto.self, decoder: decoder)
+            .decode(type: PageContainerDto<ListMovieDto>.self, decoder: decoder)
             .map(\.results)
             .mapError { error in
                 print(error)
@@ -42,13 +55,7 @@ public struct TheMovieDBApi: MovieApiService {
     
     public func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError> {
         
-        
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
         let url = Endpoints.detail(movieId).url
-        print(url)
-        let session = URLSession(configuration: .default)
         return session.dataTaskPublisher(for: url)
             .map {
                 print(String(data: $0.data, encoding: .utf8)!)
@@ -67,10 +74,8 @@ public struct TheMovieDBApi: MovieApiService {
         case detail(Int)
         
         private var baseComponents: URLComponents {
-            var components = URLComponents(string: "https://api.themoviedb.org/3/")!
-            components.queryItems = [
-                URLQueryItem(name: "api_key", value: apiKey),
-            ]
+            #warning("get base url from env")
+            var components = URLComponents(string: "http://localhost:8080/")!
             return components
         }
         
@@ -78,10 +83,13 @@ public struct TheMovieDBApi: MovieApiService {
             var components = baseComponents
             switch self {
             case .search(let query):
-                components.queryItems?.append(URLQueryItem(name: "query", value: query))
-                components.path.append("search/movie")
+                components.queryItems = [
+                    URLQueryItem(name: "query", value: query)
+                ]
+                
+                components.path.append("movies")
             case .detail(let movieId):
-                components.path.append("movie/\(movieId)")
+                components.path.append("movies/\(movieId)")
             }
             return components.url!
         }

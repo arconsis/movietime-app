@@ -20,7 +20,7 @@ struct MovieTime: App {
 extension AppEnvironment {
     static let app: AppEnvironment = AppEnvironment(
         mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-        movieService: AppMovieService(api: TheMovieDBApi()),
+        movieService: AppMovieService(api: MovieTimeBff()),
         favoriteService: CoreDataFavoriteService()
     )
 }
