@@ -24,6 +24,12 @@ Previous Sessions can be found on our [YouTube Channel](https://www.youtube.com/
 - [Episode 11 - Movie Detail View](https://youtu.be/AtlaHpQkGUw)
 - [Episode 12 - Finishing up the Movie Detail View](https://youtu.be/v11XdoQAAT8)
 - [Episode 13 - Unit Tests](https://youtu.be/4uDxXrv2V0o)
+- [Episode 14 - Service Layer 1](https://youtu.be/x1Aw_PrYuVI) 
+- [Episode 15 - Service Layer 2](https://youtu.be/cVtUqUq1Bk0)
+- [Episode 16 - Mockingbird & Service Layer 3](https://youtu.be/NSioaZaC6IA)
+- [Episode 17 - Service Layer 4](https://youtu.be/hgHGJQOI9Ic)
+- [Episode 18 - Core Data 1](https://youtu.be/ib1SP_zPQpQ)
+- [Episode 19 - Core Data 2](https://youtu.be/c9ZY_f5EQko)
 
 ### Contribution
 If you have any comments or suggestions for improvement, please send us a pull request, we will gladly take a look at your ideas.
