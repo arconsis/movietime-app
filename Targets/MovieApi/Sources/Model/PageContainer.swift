@@ -9,9 +9,8 @@
 import Foundation
 
 struct PageContainerDto<Entry: Decodable>: Decodable {
-    let results: [Entry]
-    
-    enum CodingKeys: String, CodingKey {
-        case results = "movies"
-    }
+    let page: Int
+    let totalPages: Int
+    let totalResults: Int
+    let result: [Entry]
 }

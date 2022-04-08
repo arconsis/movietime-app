@@ -19,8 +19,19 @@ struct SearchScreen: View {
                 .padding(.vertical, 8)
                 Divider()
                 List {
-                    ForEachStore(store.scope(state: \.movieStates, action: Search.Action.movie(index:action:)),
+                    ForEachStore(store.scope(state: \.movieStates, action: Search.Action.movie(movieId:action:)),
                                  content: MovieListRow.init(store:))
+                    if viewStore.isLoadingMoreMovies {
+                        HStack() {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    }
+                    if viewStore.loadingMoreFailed {
+                        Text("loading failed")
+                            .foregroundColor(.red)
+                    }
                 }
                 .listStyle(.plain)
                 .onAppear {

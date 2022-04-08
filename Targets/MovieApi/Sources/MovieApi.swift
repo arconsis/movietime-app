@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 
 public protocol MovieApiService {
-    func search(query: String) -> AnyPublisher<[ListMovieDto], MovieApiError>
+    func search(query: String, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError>
     func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError>
 }
 
@@ -30,6 +30,11 @@ public class MovieTimeBff: MovieApiService {
         decoder.dateDecodingStrategy = .custom {
             let container = try $0.singleValueContainer()
             let string = try container.decode(String.self)
+            
+            #warning("Andreas needs to fix empty dates first. then remove this")
+            guard !string.isEmpty else {
+                return .now
+            }
             guard let date = self.dateFormatter.date(from: string) else {
                 throw DecodingError.dataCorruptedError(in: container,
                                                        debugDescription: "Invalid date: " + string)
@@ -39,13 +44,13 @@ public class MovieTimeBff: MovieApiService {
         
     }
     
-    public func search(query: String) -> AnyPublisher<[ListMovieDto], MovieApiError> {
+    public func search(query: String, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError> {
     
-        let url = Endpoints.search(query).url
+        let url = Endpoints.search(query: query, page: page).url
         return session.dataTaskPublisher(for: url)
             .map { $0.data }
             .decode(type: PageContainerDto<ListMovieDto>.self, decoder: decoder)
-            .map(\.results)
+            .map(\.result)
             .mapError { error in
                 print(error)
                 return MovieApiError.detail
@@ -70,7 +75,7 @@ public class MovieTimeBff: MovieApiService {
     }
     
     enum Endpoints {
-        case search(String)
+        case search(query: String, page: Int)
         case detail(Int)
         
         private var baseComponents: URLComponents {
@@ -82,9 +87,10 @@ public class MovieTimeBff: MovieApiService {
         var url: URL {
             var components = baseComponents
             switch self {
-            case .search(let query):
+            case .search(query: let query, page: let page):
                 components.queryItems = [
-                    URLQueryItem(name: "query", value: query)
+                    URLQueryItem(name: "query", value: query),
+                    URLQueryItem(name: "page", value: "\(page)")
                 ]
                 
                 components.path.append("movies")

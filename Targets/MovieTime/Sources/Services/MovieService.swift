@@ -12,7 +12,7 @@ import MovieApi
 
 
 protocol MovieService {
-    func search(query: String) -> AnyPublisher<[Movie], MovieSearchError>
+    func search(query: String, page: Int) -> AnyPublisher<[Movie], MovieSearchError>
     func movie(withId movieId: Int) -> AnyPublisher<Movie, MovieDetailError>
 }
 
@@ -29,11 +29,11 @@ struct AppMovieService: MovieService {
     
     let api: MovieApiService
     
-    func search(query: String) -> AnyPublisher<[Movie], MovieSearchError> {
+    func search(query: String, page: Int) -> AnyPublisher<[Movie], MovieSearchError> {
         guard !query.isEmpty else {
             return Fail(error: MovieSearchError.invalidSearchTerm).eraseToAnyPublisher()
         }
-        return api.search(query: query)
+        return api.search(query: query, page: page)
             .receive(on: DispatchQueue.main)
             .map { $0.map(Movie.init) }
             .mapError { _ in .failed }
