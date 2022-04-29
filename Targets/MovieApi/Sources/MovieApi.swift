@@ -3,8 +3,17 @@ import Combine
 import SwiftUI
 
 public protocol MovieApiService {
+    func movies(type: MovieCollectionType, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError>
     func search(query: String, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError>
     func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError>
+}
+
+public enum MovieCollectionType {
+    case latest
+    case nowPlaying
+    case popular
+    case topRated
+    case upcoming
 }
 
 public enum MovieApiError: Swift.Error {
@@ -14,40 +23,37 @@ public enum MovieApiError: Swift.Error {
 
 public class MovieTimeBff: MovieApiService {
     
-    private let dateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        // "2019-03-06"
-        formatter.formatOptions = [.withFullDate]
-        return formatter
-    }()
-    
     private let session: URLSession
     private let decoder: JSONDecoder
     
     public init(){
         session = URLSession(configuration: .default)
         decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .custom {
-            let container = try $0.singleValueContainer()
-            let string = try container.decode(String.self)
-            
-            #warning("Andreas needs to fix empty dates first. then remove this")
-            guard !string.isEmpty else {
-                return .now
-            }
-            guard let date = self.dateFormatter.date(from: string) else {
-                throw DecodingError.dataCorruptedError(in: container,
-                                                       debugDescription: "Invalid date: " + string)
-            }
-            return date
+        decoder.dateDecodingStrategy = .iso8601
+    }
+    
+    public func movies(type: MovieCollectionType, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError> {
+        let query: String
+        switch type {
+        case .latest:
+            query = "Star Trek"
+        case .nowPlaying:
+            query = "Marvel"
+        case .popular:
+            query = "Star Wars"
+        case .topRated:
+            query = "Transformers"
+        case .upcoming:
+            query = "Dr Strange"
         }
-        
+        return search(query: query, page: page)
     }
     
     public func search(query: String, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError> {
     
-        let url = Endpoints.search(query: query, page: page).url
-        return session.dataTaskPublisher(for: url)
+        let request = Endpoints.search(query: query, page: page).request
+        
+        return session.dataTaskPublisher(for: request)
             .map { $0.data }
             .decode(type: PageContainerDto<ListMovieDto>.self, decoder: decoder)
             .map(\.result)
@@ -60,8 +66,8 @@ public class MovieTimeBff: MovieApiService {
     
     public func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError> {
         
-        let url = Endpoints.detail(movieId).url
-        return session.dataTaskPublisher(for: url)
+        let request = Endpoints.detail(movieId).request
+        return session.dataTaskPublisher(for: request)
             .map {
                 print(String(data: $0.data, encoding: .utf8)!)
                 return $0.data
@@ -98,6 +104,17 @@ public class MovieTimeBff: MovieApiService {
                 components.path.append("movies/\(movieId)")
             }
             return components.url!
+        }
+        
+        var request: URLRequest {
+            var request = URLRequest(url: self.url)
+            let locale = Locale.current
+            
+            if let language = locale.languageCode {
+                request.addValue(language, forHTTPHeaderField: "Accept-Language")
+            }
+            
+            return request
         }
     }
 }

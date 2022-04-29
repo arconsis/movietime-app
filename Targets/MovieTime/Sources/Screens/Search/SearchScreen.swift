@@ -34,13 +34,8 @@ struct SearchScreen: View {
                     }
                 }
                 .listStyle(.plain)
-                .onAppear {
-                    if viewStore.searchTerm.isEmpty {
-                        viewStore.send(.searchFieldChanged("Marvel"))
-                    }
-                }
             }
         }
-        .navigationTitle("Movie Time")
+        .navigationTitle("Search")
     }
 }

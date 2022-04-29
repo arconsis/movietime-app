@@ -1,0 +1,113 @@
+//
+//  MovieListCore.swift
+//  MovieTime
+//
+//  Created by arconsis on 29.04.21.
+//  Copyright © 2021 arconsis. All rights reserved.
+//
+
+import SwiftUI
+import ComposableArchitecture
+import Combine
+
+struct MovieCollectionState: Equatable, Identifiable {
+    var type: CollectionType
+    var title: String {
+        type.title
+        
+    }
+    var currentPage = 1
+    var lastPageReached = false
+    var isLoadingMoreMovies = false
+    var loadingMoreFailed = false
+    var movieStates: IdentifiedArrayOf<MovieState> = []
+    
+    var id: String {
+        return title
+    }
+    
+    enum CollectionType: Equatable {
+        case popular
+        case nowPlaying
+        case custom(String)
+        
+        var title: String {
+            switch self {
+            case .popular:
+                return "Most Popular Movies"
+            case .nowPlaying:
+                return "Movies in Theaters"
+            case .custom(let string):
+                return string
+            }
+        }
+    }
+}
+
+enum MovieCollectionAction: Equatable {
+    case viewAppeared
+    case showMovies(Result<[Movie], MovieSearchError>)
+    case appendMovies(Result<[Movie], MovieSearchError>)
+    case movie(movieId: Int, action: MovieAction)
+    case loadMore
+}
+
+let movieCollectionReducer = Reducer<MovieCollectionState, MovieCollectionAction, AppEnvironment>.combine(
+    movieReducer.forEach(
+        state: \.movieStates,
+        action: /MovieCollectionAction.movie(movieId:action:),
+        environment: { $0 }),
+Reducer { state, action, env in
+    switch action {
+    case .viewAppeared:
+        state.currentPage = 1
+        state.lastPageReached = false
+        state.loadingMoreFailed = false
+        return env.movieService.search(query: state.title, page: state.currentPage)
+            .receive(on: env.mainQueue)
+            .catchToEffect()
+            .map(MovieCollectionAction.showMovies)
+    case .loadMore:
+        guard !state.lastPageReached, !state.isLoadingMoreMovies else {
+            return .none
+        }
+        state.currentPage += 1
+        state.isLoadingMoreMovies = true
+        state.loadingMoreFailed = false
+        return env.movieService.search(query: state.title, page: state.currentPage)
+            .receive(on: env.mainQueue)
+            .catchToEffect()
+            .map(MovieCollectionAction.appendMovies)
+        
+    case let .showMovies(.success(movies)):
+        state.movieStates = IdentifiedArrayOf<MovieState>(uniqueElements: movies.map { MovieState(movie: $0) })
+        return .none
+    case .showMovies(.failure):
+        state.movieStates = []
+        return .none
+        
+    case let .appendMovies(.success(movies)):
+        guard !movies.isEmpty else {
+            state.lastPageReached = true
+            return .none
+        }
+        state.isLoadingMoreMovies = false
+        movies.forEach { movie in
+            state.movieStates.append(MovieState(movie: movie))
+        }
+        return .none
+    case .appendMovies(.failure):
+        state.isLoadingMoreMovies = false
+        state.loadingMoreFailed = true
+        return .none
+    case .movie(movieId: let movieId, action: .viewAppeared):
+        let movieIdToTriggerLoading = state.movieStates[max(0,state.movieStates.count - 3)].id
+        
+        if movieIdToTriggerLoading == movieId {
+            return Effect(value: .loadMore)
+        } else {
+            return .none
+        }
+    default: return .none
+    }
+})

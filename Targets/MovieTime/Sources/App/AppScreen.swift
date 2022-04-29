@@ -16,6 +16,12 @@ struct AppScreen: View {
     var body: some View {
         TabView {
             NavigationView {
+                HomeScreen(store: store.scope(state: \.home, action: AppAction.home))
+            }
+            .tabItem {
+                Label("Home", systemImage: "house")
+            }
+            NavigationView {
                 SearchScreen(store: store.scope(state: \.search, action: AppAction.search))
             }
             .tabItem {
