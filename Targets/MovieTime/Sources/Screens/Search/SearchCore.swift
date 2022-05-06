@@ -12,8 +12,8 @@ enum Search {
     }
 
     enum Action {
-        case showMovies(Result<[Movie], MovieSearchError>)
-        case appendMovies(Result<[Movie], MovieSearchError>)
+        case showMovies(Result<[Movie], MovieServiceError>)
+        case appendMovies(Result<[Movie], MovieServiceError>)
         case searchFieldChanged(String)
         case search(String)
         case movie(movieId: Int, action: MovieAction)

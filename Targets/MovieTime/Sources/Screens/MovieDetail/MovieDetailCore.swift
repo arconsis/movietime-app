@@ -21,7 +21,7 @@ struct MovieDetailState: Equatable {
 // MARK: - Actions
 enum MovieDetailAction: Equatable {
     case viewAppeared
-    case updateMovie(Result<Movie, MovieDetailError>)
+    case updateMovie(Result<Movie, MovieServiceError>)
     case updateFavorite(Result<Bool, Never>)
     case toggleFavorite
 }

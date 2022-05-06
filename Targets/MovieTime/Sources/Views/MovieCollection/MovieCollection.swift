@@ -14,21 +14,25 @@ struct MovieCollection: View {
     
     var body: some View {
         WithViewStore(store) { viewStore in
-            VStack(alignment: .leading) {
-                Text(viewStore.title).font(.title)
-                    .padding()
+            VStack(alignment: .leading, spacing: 0) {
+                Text(viewStore.title)
+                    .font(.headline)
+                    .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
                     
-                    HStack(spacing: 20) {
-                        ForEach(viewStore.movieStates) { movie in
-                            if let url =  movie.movie.posterThumbnail {
-                                RemoteImage(url: url)
-                                    .aspectRatio(contentMode: .fit)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .frame(width: 100)
-                            }
-                        }
+                    HStack() {
+                        
+                            ForEachStore(store.scope(state: \.movieStates, action: MovieCollectionAction.movie(movieId:action:)),
+                                         content: MovieCollectionElement.init(store:))
+//                            if let url =  movie.movie.posterThumbnail {
+//                                RemoteImage(url: url)
+//                                    .aspectRatio(contentMode: .fit)
+//                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+//                                    .frame(width: 100)
+//                            }
+                    
                     }
+                    .padding(.horizontal)
                 }
             }
             .onAppear {

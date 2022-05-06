@@ -29,7 +29,8 @@ struct MovieCollectionState: Equatable, Identifiable {
     enum CollectionType: Equatable {
         case popular
         case nowPlaying
-        case custom(String)
+        case topRated
+        case custom(title: String, query: String)
         
         var title: String {
             switch self {
@@ -37,8 +38,10 @@ struct MovieCollectionState: Equatable, Identifiable {
                 return "Most Popular Movies"
             case .nowPlaying:
                 return "Movies in Theaters"
-            case .custom(let string):
-                return string
+            case .topRated:
+                return "Best Movies of all time"
+            case .custom(title: let title, query: _):
+                return title
             }
         }
     }
@@ -46,9 +49,10 @@ struct MovieCollectionState: Equatable, Identifiable {
 
 enum MovieCollectionAction: Equatable {
     case viewAppeared
-    case showMovies(Result<[Movie], MovieSearchError>)
-    case appendMovies(Result<[Movie], MovieSearchError>)
+    case showMovies(Result<[Movie], MovieServiceError>)
+    case appendMovies(Result<[Movie], MovieServiceError>)
     case movie(movieId: Int, action: MovieAction)
+    case requestMovies(isFirstPage: Bool)
     case loadMore
 }
 
@@ -63,10 +67,7 @@ Reducer { state, action, env in
         state.currentPage = 1
         state.lastPageReached = false
         state.loadingMoreFailed = false
-        return env.movieService.search(query: state.title, page: state.currentPage)
-            .receive(on: env.mainQueue)
-            .catchToEffect()
-            .map(MovieCollectionAction.showMovies)
+        return Effect(value: .requestMovies(isFirstPage: true))
     case .loadMore:
         guard !state.lastPageReached, !state.isLoadingMoreMovies else {
             return .none
@@ -74,11 +75,27 @@ Reducer { state, action, env in
         state.currentPage += 1
         state.isLoadingMoreMovies = true
         state.loadingMoreFailed = false
-        return env.movieService.search(query: state.title, page: state.currentPage)
+        
+        return Effect(value: .requestMovies(isFirstPage: false))
+
+    case .requestMovies(let isFirstPage):
+        let publisher: AnyPublisher<[Movie], MovieServiceError>
+        
+        switch state.type {
+        case .custom(title: _, query: let query):
+            publisher = env.movieService.search(query: query, page: state.currentPage)
+        case .nowPlaying:
+            publisher = env.movieService.movies(type: .nowPlaying, page: state.currentPage)
+        case .popular:
+            publisher = env.movieService.movies(type: .popular, page: state.currentPage)
+        case .topRated:
+            publisher = env.movieService.movies(type: .topRated, page: state.currentPage)
+        }
+        
+        return publisher
             .receive(on: env.mainQueue)
             .catchToEffect()
-            .map(MovieCollectionAction.appendMovies)
-        
+            .map(isFirstPage ? MovieCollectionAction.showMovies : MovieCollectionAction.appendMovies)
     case let .showMovies(.success(movies)):
         state.movieStates = IdentifiedArrayOf<MovieState>(uniqueElements: movies.map { MovieState(movie: $0) })
         return .none

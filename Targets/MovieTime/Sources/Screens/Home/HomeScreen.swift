@@ -12,6 +12,7 @@ struct HomeScreen: View {
                     MovieCollection(store: store.scope(state: \.popular, action: Home.Action.popular))
                     MovieCollection(store: store.scope(state: \.topRated, action: Home.Action.topRated))
                     MovieCollection(store: store.scope(state: \.nowPlaying, action: Home.Action.nowPlaying))
+                    MovieCollection(store: store.scope(state: \.search, action: Home.Action.search))
                     Spacer()
                 }
             }
