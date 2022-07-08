@@ -14,10 +14,6 @@ extension Project {
         targets += additionalTargets.flatMap({ makeFrameworkTargets(name: $0, platform: platform) })
         return Project(name: name,
                        organizationName: "arconsis",
-                       packages: [
-                        .remote(url: "https://github.com/pointfreeco/swift-composable-architecture", requirement: .upToNextMajor(from: "0.33.1")),
-                        .remote(url: "https://github.com/birdrides/mockingbird", requirement: .upToNextMajor(from: "0.18.1"))
-                       ],
                        targets: targets)
     }
 
@@ -63,7 +59,7 @@ extension Project {
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
             entitlements: .relativeToRoot("Entitlements/MovieTime.entitlements"),
-            dependencies: dependencies + [.package(product: "ComposableArchitecture")],
+            dependencies: dependencies + [.external(name: "ComposableArchitecture"), .external(name: "KeychainSwift")],
             coreDataModels: [
                 CoreDataModel("Targets/\(name)/Sources/Services/MovieDataModel.xcdatamodeld")
             ]
@@ -78,7 +74,7 @@ extension Project {
             sources: ["Targets/\(name)/Tests/**"],
             dependencies: [
                 .target(name: "\(name)"),
-                .package(product: "Mockingbird")
+                .external(name: "Mockingbird")
         ])
         return [mainTarget, testTarget]
     }
