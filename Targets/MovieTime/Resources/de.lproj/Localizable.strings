@@ -1,0 +1,11 @@
+/* 
+  Localizable.strings
+  MovieTime
+
+  Created by Jonas Stubenrauch on 08.07.22.
+  Copyright © 2022 arconsis. All rights reserved.
+*/
+
+"Welcome to MovieTime" = "Willkommen bei MovieTime";
+"Sign in to continue" = "Anmelden zum Fortfahren";
+"Foo" = "Bar";

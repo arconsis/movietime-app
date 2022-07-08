@@ -11,10 +11,12 @@ import Combine
 import ComposableArchitecture
 
 struct AppState: Equatable {
-    var home: Home.State = Home.State()
-    var search: Search.State = Search.State()
-    var favorites: FavoritesState = FavoritesState()
+    var isLoggedIn = false
+    var home: Home.State = .init()
+    var search: Search.State = .init()
+    var favorites: FavoritesState = .init()
     var lists: MyLists.State = .init()
+    var login: Login.State = .init()
 }
 
 enum AppAction {
@@ -22,6 +24,7 @@ enum AppAction {
     case search(action: Search.Action)
     case favorites(action: FavoritesAction)
     case lists(action: MyLists.Action)
+    case login(action: Login.Action)
 }
 
 struct AppEnvironment {
@@ -52,10 +55,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         action: /AppAction.favorites,
         environment: { $0}),
     
+    Login.reducer.pullback(
+        state: \.login,
+        action: /AppAction.login,
+        environment: { _ in .init() }),
+    
     .init { state, action ,_ in
         switch action {
         case .lists(action: .addList):
             print("Add list in App reducer")
+            return .none
+        case .login(action: .loggedIn):
+            state.isLoggedIn = true
             return .none
         default:
             return .none
