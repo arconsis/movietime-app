@@ -62,6 +62,7 @@ extension Project {
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
+            entitlements: .relativeToRoot("Entitlements/MovieTime.entitlements"),
             dependencies: dependencies + [.package(product: "ComposableArchitecture")],
             coreDataModels: [
                 CoreDataModel("Targets/\(name)/Sources/Services/MovieDataModel.xcdatamodeld")

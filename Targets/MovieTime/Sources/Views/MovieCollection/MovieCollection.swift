@@ -20,17 +20,9 @@ struct MovieCollection: View {
                     .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
                     
-                    HStack() {
-                        
+                    LazyHStack() {
                             ForEachStore(store.scope(state: \.movieStates, action: MovieCollectionAction.movie(movieId:action:)),
                                          content: MovieCollectionElement.init(store:))
-//                            if let url =  movie.movie.posterThumbnail {
-//                                RemoteImage(url: url)
-//                                    .aspectRatio(contentMode: .fit)
-//                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-//                                    .frame(width: 100)
-//                            }
-                    
                     }
                     .padding(.horizontal)
                 }

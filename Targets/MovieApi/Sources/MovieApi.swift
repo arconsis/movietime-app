@@ -8,17 +8,18 @@ public protocol MovieApiService {
     func detail(movieId: Int) -> AnyPublisher<MovieDto, MovieApiError>
 }
 
-public enum MovieCollectionType {
+public enum MovieCollectionType: String {
     case latest
-    case nowPlaying
+    case nowPlaying = "now-playing"
     case popular
-    case topRated
+    case topRated = "top-rated"
     case upcoming
 }
 
 public enum MovieApiError: Swift.Error {
     case search
     case detail
+    case collection
 }
 
 public class MovieTimeBff: MovieApiService {
@@ -33,20 +34,17 @@ public class MovieTimeBff: MovieApiService {
     }
     
     public func movies(type: MovieCollectionType, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError> {
-        let query: String
-        switch type {
-        case .latest:
-            query = "Star Trek"
-        case .nowPlaying:
-            query = "Marvel"
-        case .popular:
-            query = "Star Wars"
-        case .topRated:
-            query = "Transformers"
-        case .upcoming:
-            query = "Dr Strange"
-        }
-        return search(query: query, page: page)
+        let request = Endpoints.collection(type: type, page: page).request
+        
+        return session.dataTaskPublisher(for: request)
+            .map { $0.data }
+            .decode(type: PageContainerDto<ListMovieDto>.self, decoder: decoder)
+            .map(\.result)
+            .mapError { error in
+                print(error)
+                return MovieApiError.collection
+            }
+            .eraseToAnyPublisher()
     }
     
     public func search(query: String, page: Int) -> AnyPublisher<[ListMovieDto], MovieApiError> {
@@ -59,7 +57,7 @@ public class MovieTimeBff: MovieApiService {
             .map(\.result)
             .mapError { error in
                 print(error)
-                return MovieApiError.detail
+                return MovieApiError.search
             }
             .eraseToAnyPublisher()
     }
@@ -75,18 +73,19 @@ public class MovieTimeBff: MovieApiService {
             .decode(type: MovieDto.self, decoder: decoder)
             .mapError { error in
                 print(error)
-                return MovieApiError.search
+                return MovieApiError.detail
             }
             .eraseToAnyPublisher()
     }
     
     enum Endpoints {
         case search(query: String, page: Int)
+        case collection(type: MovieCollectionType, page: Int)
         case detail(Int)
         
         private var baseComponents: URLComponents {
             #warning("get base url from env")
-            var components = URLComponents(string: "http://localhost:8080/")!
+            let components = URLComponents(string: "http://localhost:8080/")!
             return components
         }
         
@@ -99,6 +98,12 @@ public class MovieTimeBff: MovieApiService {
                     URLQueryItem(name: "page", value: "\(page)")
                 ]
                 
+                components.path.append("movies")
+            case .collection(type: let type, page: let page):
+                components.queryItems = [
+                    URLQueryItem(name: "collection", value: type.rawValue),
+                    URLQueryItem(name: "page", value: "\(page)")
+                ]
                 components.path.append("movies")
             case .detail(let movieId):
                 components.path.append("movies/\(movieId)")
