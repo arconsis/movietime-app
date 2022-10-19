@@ -9,8 +9,8 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct MovieCollection: View {
-    let store: Store<MovieCollectionState, MovieCollectionAction>
+struct MovieCollectionView: View {
+    let store: StoreOf<MovieCollection>
     
     var body: some View {
         WithViewStore(store) { viewStore in
@@ -21,7 +21,7 @@ struct MovieCollection: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     
                     LazyHStack() {
-                            ForEachStore(store.scope(state: \.movieStates, action: MovieCollectionAction.movie(movieId:action:)),
+                        ForEachStore(store.scope(state: \.movieStates, action: MovieCollection.Action.movie(movieId:action:)),
                                          content: MovieCollectionElement.init(store:))
                     }
                     .padding(.horizontal)

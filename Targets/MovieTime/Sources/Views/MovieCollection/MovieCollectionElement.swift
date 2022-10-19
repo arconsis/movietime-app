@@ -10,7 +10,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct MovieCollectionElement: View {
-    let store: Store<MovieState, MovieAction>
+    let store: StoreOf<MovieListEntry>
     
     static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -56,10 +56,14 @@ struct MovieCollectionElement: View {
             .onTapGesture {
                 viewStore.send(.showDetails(true))
             }
-            .sheet(isPresented: viewStore.binding(get: \.isDetailShown, send: MovieAction.showDetails)) {
-                IfLetStore(store.scope(state: \.detail , action: MovieAction.detail), then: {
-                    MovieDetailScreen(store:$0)
-                })
+            .sheet(isPresented: viewStore.binding(get: \.isDetailShown, send: MovieListEntry.Action.showDetails)) {
+                IfLetStore(
+                    store.scope(
+                        state: \.detail,
+                        action: MovieListEntry.Action.detail),
+                    then: {
+                        MovieDetailScreen(store:$0)
+                    })
             }
             .onAppear {
                 viewStore.send(.viewAppeared)
@@ -71,19 +75,16 @@ struct MovieCollectionElement: View {
 
 
 
-import MovieApi
-struct MovieCollectionElement_Previews: PreviewProvider {
-    static var previews: some View {
-        MovieCollectionElement(store: .init(
-            initialState: .init(
-                movie: Movie.preview.first!,
-                isFavorite: true,
-                isDetailShown: false,
-                detail: nil),
-            reducer: movieReducer,
-            environment: AppEnvironment(
-                mainQueue: .main,
-                movieService: AppMovieService(api: MovieTimeBff()),
-                favoriteService: InMemoryFavoriteService())))
-    }
-}
+//import MovieApi
+//struct MovieCollectionElement_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MovieCollectionView(store: .init(
+//            initialState: .init(type: <#T##MovieCollection.State.CollectionType#>, currentPage: <#T##Int#>, lastPageReached: <#T##Bool#>, isLoadingMoreMovies: <#T##Bool#>, loadingMoreFailed: <#T##Bool#>, movieStates: <#T##IdentifiedArrayOf<MovieListEntry.State>#>)
+//                    .init(
+//                movie: Movie.preview.first!,
+//                isFavorite: true,
+//                isDetailShown: false,
+//                detail: nil),
+//            reducer: MovieCollection()))
+//    }
+//}

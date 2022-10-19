@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SwiftUI
 import MovieApi
 
 struct Movie: Equatable, Identifiable, Hashable {    

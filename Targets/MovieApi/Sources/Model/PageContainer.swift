@@ -6,7 +6,6 @@
 //  Copyright © 2021 arconsis. All rights reserved.
 //
 
-import Foundation
 
 struct PageContainerDto<Entry: Decodable>: Decodable {
     let page: Int

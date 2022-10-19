@@ -10,7 +10,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct MovieListRow: View {
-    let store: Store<MovieState, MovieAction>
+    let store: StoreOf<MovieListEntry>
     
     var body: some View {
         WithViewStore(store) { viewStore in
@@ -51,8 +51,8 @@ struct MovieListRow: View {
                     Image(systemName: viewStore.isFavorite ? "heart.slash.fill" : "heart.fill")
                 }
             }
-            .sheet(isPresented: viewStore.binding(get: \.isDetailShown, send: MovieAction.showDetails)) {
-                IfLetStore(store.scope(state: \.detail , action: MovieAction.detail), then: {
+            .sheet(isPresented: viewStore.binding(get: \.isDetailShown, send: MovieListEntry.Action.showDetails)) {
+                IfLetStore(store.scope(state: \.detail , action: MovieListEntry.Action.detail), then: {
                     MovieDetailScreen(store:$0)
                 })
             }
@@ -63,11 +63,10 @@ struct MovieListRow: View {
     }
 }
 
-//struct MovieListRow_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MovieListRow(store: Store(
-//            initialState: Movie.preview.first!,
-//            reducer: movieReducer,
-//            environment: MovieEnvironment()))
-//    }
-//}
+struct MovieListRow_Previews: PreviewProvider {
+    static var previews: some View {
+        MovieListRow(store: Store(
+            initialState: .init(movie: Movie.preview.first!),
+            reducer: MovieListEntry()))
+    }
+}

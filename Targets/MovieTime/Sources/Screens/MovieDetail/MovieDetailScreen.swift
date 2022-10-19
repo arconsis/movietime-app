@@ -8,11 +8,10 @@
 
 import SwiftUI
 import ComposableArchitecture
-import Combine
 
 struct MovieDetailScreen: View {
     
-    let store: Store<MovieDetailState, MovieDetailAction>
+    let store: StoreOf<MovieDetail>
     
     var body: some View {
         

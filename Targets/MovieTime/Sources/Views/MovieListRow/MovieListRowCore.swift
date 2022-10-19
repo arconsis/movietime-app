@@ -6,53 +6,57 @@
 //  Copyright © 2021 arconsis. All rights reserved.
 //
 
-import SwiftUI
 import ComposableArchitecture
-import Combine
 
-struct MovieState: Equatable, Identifiable {
-    var movie: Movie
-    var isFavorite: Bool = false
-    var isDetailShown: Bool = false
-    var detail: MovieDetailState?
+struct MovieListEntry: ReducerProtocol {
     
-    var id: Int {
-        return movie.id
+    struct State: Equatable, Identifiable {
+        var movie: Movie
+        var isFavorite: Bool = false
+        var isDetailShown: Bool = false
+        var detail: MovieDetail.State?
+        
+        var id: Int {
+            return movie.id
+        }
     }
-}
-
-enum MovieAction: Equatable {
-    case viewAppeared
-    case updateFavorite(Result<Bool, Never>)
-    case toggleFavorite
-    case detail(MovieDetailAction)
-    case showDetails(Bool)
-}
-
-let movieReducer = Reducer<MovieState, MovieAction, AppEnvironment>.combine(
-    movieDetailReducer.optional().pullback(
-        state: \.detail,
-        action: /MovieAction.detail,
-        environment: { $0 } ),
-
- Reducer { state, action, env in
-    switch action {
-    case .viewAppeared:
-        state.isFavorite = env.favoriteService.isFavorite(movieId: state.movie.id)
-        return env.favoriteService.isFavorite(movieId: state.movie.id)
-                .receive(on: DispatchQueue.main)
-                .catchToEffect()
-                .map(MovieAction.updateFavorite)
-    case .toggleFavorite:
-        env.favoriteService.toggle(movie: state.movie)
-        return .none
-    case .updateFavorite(.success(let isFavorite)):
-        state.isFavorite = isFavorite
-        return .none
-    case .showDetails(let isShowing):
-        state.isDetailShown = isShowing
-        state.detail = MovieDetailState(movie: state.movie)
-        return .none
-    default: return .none
+    
+    enum Action: Equatable {
+        case viewAppeared
+        case updateFavorite(Result<Bool, Never>)
+        case toggleFavorite
+        case detail(MovieDetail.Action)
+        case showDetails(Bool)
     }
-})
+    
+    @Dependency(\.favoriteService) var favoriteService
+    @Dependency(\.mainQueue) var mainQueue
+    
+    var body: some ReducerProtocol<State, Action> {
+        Reduce { state, action in
+            switch action {
+            case .viewAppeared:
+                state.isFavorite = favoriteService.isFavorite(movieId: state.movie.id)
+                return favoriteService.isFavorite(movieId: state.movie.id)
+                        .receive(on: mainQueue)
+                        .catchToEffect()
+                        .map(Action.updateFavorite)
+            case .toggleFavorite:
+                favoriteService.toggle(movie: state.movie)
+                return .none
+            case .updateFavorite(.success(let isFavorite)):
+                state.isFavorite = isFavorite
+                return .none
+            case .showDetails(let isShowing):
+                state.isDetailShown = isShowing
+                state.detail = MovieDetail.State(movie: state.movie)
+                return .none
+            default: return .none
+            }
+        }
+        .ifLet(\.detail, action: /Action.detail) {
+            MovieDetail()
+        }
+    }
+    
+}

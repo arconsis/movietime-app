@@ -1,9 +1,7 @@
-import Foundation
 import ComposableArchitecture
 import AuthenticationServices
-import KeychainSwift
 
-enum Login {
+struct Login: ReducerProtocol {
     struct State: Equatable {
         var scopes: [ASAuthorization.Scope] = [.fullName, .email]
     }
@@ -13,24 +11,20 @@ enum Login {
         case handleAppleSignIn(result: Result<ASAuthorization, Error>)
     }
 
-    struct Environment {
-
-    }
-
-    static let reducer = Reducer<State, Action, Environment> { state, action, env in
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .handleAppleSignIn(result: .success(let authorization)):
             
-            guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                return .none
-            }
+//            guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+//                return .none
+//            }
             
             
             // Create an account in your system.
-            let userIdentifier = appleIDCredential.user
-            let fullName = appleIDCredential.fullName
-            let email = appleIDCredential.email
-            let token = appleIDCredential.identityToken
+//            let userIdentifier = appleIDCredential.user
+//            let fullName = appleIDCredential.fullName
+//            let email = appleIDCredential.email
+//            let token = appleIDCredential.identityToken
             
             
             
@@ -42,10 +36,10 @@ enum Login {
             
             
             
-            return .none
+            return Effect(value: .loggedIn)
         case .handleAppleSignIn(result: .failure(let error)):
             print(error)
-            return .none
+            return Effect(value: .loggedIn)
         default: return .none
         }
     }

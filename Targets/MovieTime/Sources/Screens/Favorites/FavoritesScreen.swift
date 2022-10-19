@@ -11,7 +11,7 @@ import ComposableArchitecture
 
 struct FavoritesScreen: View {
     
-    let store: Store<FavoritesState, FavoritesAction>
+    let store: StoreOf<Favorites>
     
     var body: some View {
         WithViewStore(store) { viewStore in
@@ -21,7 +21,7 @@ struct FavoritesScreen: View {
             } else {
                 List {
                     ForEachStore(store.scope(state: \.movieStates,
-                                             action: FavoritesAction.movie(index:action:)),
+                                             action: Favorites.Action.movie(index:action:)),
                                  content: MovieListRow.init(store:))
                 }
                 .listStyle(.plain)

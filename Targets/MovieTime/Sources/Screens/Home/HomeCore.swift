@@ -1,40 +1,33 @@
-import Foundation
 import ComposableArchitecture
 
-enum Home {
+struct Home: ReducerProtocol {
     struct State: Equatable {
-        var popular: MovieCollectionState = .init(type: .popular)
-        var topRated: MovieCollectionState = .init(type: .topRated)
-        var nowPlaying: MovieCollectionState = .init(type: .nowPlaying)
-        var search: MovieCollectionState = .init(type: .custom(title: "All about Matrix", query: "Matrix"))
+        var popular: MovieCollection.State = .init(type: .popular)
+        var topRated: MovieCollection.State = .init(type: .topRated)
+        var nowPlaying: MovieCollection.State = .init(type: .nowPlaying)
+        var search: MovieCollection.State = .init(type: .custom(title: "All about Matrix", query: "Matrix"))
     }
 
     enum Action {
-        case popular(action:MovieCollectionAction)
-        case topRated(action:MovieCollectionAction)
-        case nowPlaying(action:MovieCollectionAction)
-        case search(action:MovieCollectionAction)
+        case popular(action:MovieCollection.Action)
+        case topRated(action:MovieCollection.Action)
+        case nowPlaying(action:MovieCollection.Action)
+        case search(action:MovieCollection.Action)
     }
-
-    struct Environment { }
-
-    static let reducer = Reducer<State, Action, AppEnvironment>.combine(
-        movieCollectionReducer.pullback(
-            state: \.popular,
-            action: /Home.Action.popular,
-            environment: { $0 }),
-        movieCollectionReducer.pullback(
-            state: \.topRated,
-            action: /Home.Action.topRated,
-            environment: { $0 }),
-        movieCollectionReducer.pullback(
-            state: \.nowPlaying,
-            action: /Home.Action.nowPlaying,
-            environment: { $0 }),
-        movieCollectionReducer.pullback(
-            state: \.search,
-            action: /Home.Action.search,
-            environment: { $0 })
-
-    )
+    
+    var body: some ReducerProtocol<State, Action> {
+        Scope(state: \.popular, action: /Action.popular) {
+            MovieCollection()
+        }
+        Scope(state: \.topRated, action: /Action.topRated) {
+            MovieCollection()
+        }
+        Scope(state: \.nowPlaying, action: /Action.nowPlaying) {
+            MovieCollection()
+        }
+        Scope(state: \.search, action: /Action.search) {
+            MovieCollection()
+        }
+        
+    }
 }

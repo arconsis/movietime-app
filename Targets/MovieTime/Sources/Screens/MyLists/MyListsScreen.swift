@@ -3,7 +3,7 @@ import ComposableArchitecture
 
 struct MyListsScreen: View {
 
-    let store: Store<MyLists.State, MyLists.Action>
+    let store: StoreOf<MyLists>
 
     var body: some View {
         WithViewStore(store) { viewStore in
@@ -26,7 +26,6 @@ struct MovieDetailScreen_Previews: PreviewProvider {
     static var previews: some View {
         MyListsScreen(
             store: Store(initialState: MyLists.State(),
-                         reducer: MyLists.reducer,
-                         environment: MyLists.Environment()))
+                         reducer: MyLists()))
     }
 }

@@ -5,7 +5,7 @@ import AuthenticationServices
 
 struct LoginScreen: View {
 
-    let store: Store<Login.State, Login.Action>
+    let store: StoreOf<Login>
 
     var body: some View {
         WithViewStore(store) { viewStore in
@@ -39,8 +39,7 @@ struct LoginScreen_Preview: PreviewProvider {
         LoginScreen(
             store: Store(
                 initialState: .init(),
-                reducer: Login.reducer,
-                environment: .init()))
+                reducer: Login()))
     }
     
     

@@ -6,70 +6,59 @@
 //  Copyright © 2021 arconsis. All rights reserved.
 //
 
-import Foundation
-import Combine
 import ComposableArchitecture
 
-struct AppState: Equatable {
-    var isLoggedIn = false
-    var home: Home.State = .init()
-    var search: Search.State = .init()
-    var favorites: FavoritesState = .init()
-    var lists: MyLists.State = .init()
-    var login: Login.State = .init()
-}
-
-enum AppAction {
-    case home(action: Home.Action)
-    case search(action: Search.Action)
-    case favorites(action: FavoritesAction)
-    case lists(action: MyLists.Action)
-    case login(action: Login.Action)
-}
-
-struct AppEnvironment {
-    var mainQueue: AnySchedulerOf<DispatchQueue>
-    var movieService: MovieService
-    var favoriteService: FavoriteService
-}
-
-
-let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-    Home.reducer.pullback(
-        state: \.home,
-        action: /AppAction.home,
-        environment: { $0 }),
+struct MovieApp: ReducerProtocol {
     
-    Search.reducer.pullback(
-        state: \.search,
-        action: /AppAction.search,
-        environment: { $0 }),
+    struct State: Equatable {
+        var isLoggedIn = false
+        var home = Home.State()
+        var search = Search.State()
+        var favorites = Favorites.State()
+        var lists = MyLists.State()
+        var login = Login.State()
+    }
     
-    MyLists.reducer.pullback(
-        state: \.lists,
-        action: /AppAction.lists,
-        environment: { _ in .init() }),
+    enum Action {
+        case home(action: Home.Action)
+        case search(action: Search.Action)
+        case favorites(action: Favorites.Action)
+        case lists(action: MyLists.Action)
+        case login(action: Login.Action)
+    }
     
-    favoritesReducer.pullback(
-        state: \.favorites,
-        action: /AppAction.favorites,
-        environment: { $0}),
-    
-    Login.reducer.pullback(
-        state: \.login,
-        action: /AppAction.login,
-        environment: { _ in .init() }),
-    
-    .init { state, action ,_ in
-        switch action {
-        case .lists(action: .addList):
-            print("Add list in App reducer")
-            return .none
-        case .login(action: .loggedIn):
-            state.isLoggedIn = true
-            return .none
-        default:
-            return .none
+    var body: some ReducerProtocol<State, Action> {
+        Reduce { state, action in
+            switch action {
+            case .lists(action: .addList):
+                print("Add list in App reducer")
+                return .none
+            case .login(action: .loggedIn):
+                state.isLoggedIn = true
+                return .none
+            default:
+                return .none
+            }
+        }
+        
+        Scope(state: \.home, action: /Action.home) {
+            Home()
+        }
+        
+        Scope(state: \.search, action: /Action.search(action:)) {
+            Search()
+        }
+        
+        Scope(state: \.lists, action: /Action.lists) {
+            MyLists()
+        }
+        
+        Scope(state: \.favorites, action: /Action.favorites(action:)) {
+            Favorites()
+        }
+        
+        Scope(state: \.login, action: /Action.login(action:)) {
+            Login()
         }
     }
-)
+}
